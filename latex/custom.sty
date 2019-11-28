@@ -1,0 +1,322 @@
+%% $HeadURL$
+%% $ID$
+%% Various LaTeX toys for PhD Thesis
+%% Collected and edited by Joe Foley<foley@MIT.EDU>
+
+\RequirePackage[layout=inline]{fixme}
+% FIXME system for making notes to each other for what needs to 
+% be completed in a group document.
+% Alternative: ednote
+
+% internal layouts: inline, margin, footnote, index, marginclue
+% % Warning! The pdf external layouts do not play well with hyperref
+% % and must be loaded by doing \fxuselayouts{}
+% external layouts: marginnote, pdfnote, pdfmargin, pdfsignote, pdfsigmargin
+%     pdfcnote, pdfcmargin, pdfcsignote, pdfcsigmargin
+%  pdfc stands for pdf color
+%\fxuselayouts{pdfcmargin}
+
+%%%%%%%%%%%% DEFAULT PACKAGES %%%%%%%%%%%%%%%%
+%% Nice package for making sub figures inside of a figure.  Keeps all
+%% the reference labels correct and makes "sub captions"
+% % WARNING: this is completely different than the subfigure package
+\usepackage{subfig}
+
+%% The xspace package will try to figure out if you meant to have a
+%% space after a new command if you don't give it any arguments (in
+%% braces: {} ).  
+\RequirePackage{xspace}
+
+%% These packages are nice for drawing diagrams directly in LaTeX
+\usepackage{pgf,tikz}
+
+%% This package makes typesetting chemical equations nice and simple
+%% e.g. \ce{S04^2-}
+%%
+%% WARNING: This package sometimes causes problems due to LaTeX3 getting out of sync.
+%% Make sure you run the MikTeX Updater, update FNDP, and synchronize in the package manager
+%% at least at first.
+%%
+\usepackage[version=4]{mhchem}
+
+\makeatletter
+\newcounter{reaction}
+%%% >> for report and book >>
+\renewcommand\thereaction{C\,\thechapter.\arabic{reaction}}
+\@addtoreset{reaction}{chapter}
+%%% << for report and book <<
+\newcommand\reactiontag%
+{\refstepcounter{reaction}\tag{\thereaction}}
+\newcommand\reaction@[2][]%
+{\begin{equation}\ce{#2}%
+\ifx\@empty#1\@empty\else\label{#1}\fi%
+\reactiontag\end{equation}}
+\newcommand\reaction@nonumber[1]%
+{\begin{equation*}\ce{#1}\end{equation*}}
+\newcommand\reaction%
+{\@ifstar{\reaction@nonumber}{\reaction@}}
+\makeatother
+
+%% This code makes a new reaction environment that has its own numbering for chemical formula
+%% so they can be referenced in the text.  You will need the mhchem package to use it.
+%% See page 12 of http://mirrors.ctan.org/macros/latex/contrib/mhchem/mhchem.pdf
+
+\setlength{\unitlength}{1cm}
+%% this is the base unit for the picture type environments
+%% such as tikz
+
+%% Force URLs to break
+\setcounter{biburllcpenalty}{7000}
+\setcounter{biburlucpenalty}{8000}
+
+\RequirePackage{examplep} % another verbatim environment
+
+\finalifforcegraphics{listings}
+\RequirePackage{listings} % force final or included files are skipped, invisibly!
+% This allows you to include code easily
+% \begin{lstlisting}[language=bash]
+%  $ wget http://blah
+% \end{lstlisting}
+% or for simpler snippets
+%  \lstinline^cp -rp foo bar^
+%  You can replace ^ with any character not in your code
+\lstdefinestyle{default}{
+  %basicstyle=\footnotesize\ttfamily,%
+  numbers=left,%
+  numberstyle=\tiny,%
+  numberfirstline=true,%
+  stepnumber=2,%
+  numbersep=5pt,%
+  columns=fullflexible,%
+  tabsize=4,%
+  frame=lines,%
+  breaklines=true,% break long lines
+  prebreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\color{red}\hookleftarrow}}, % red arrow
+  postbreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\color{red}\hookrightarrow}}, % red arrow
+  % from http://tex.stackexchange.com/questions/116534/lstlisting-line-wrapping
+}
+\lstset{%
+  language=,%default similar to verbatim
+  style=default,
+}
+
+\RequirePackage{dashrule}
+%% Allows us to make rules that are not just solid lines
+% \hdashrule[raise][leader]{width}{height}{dash}
+
+\RequirePackage{paralist}
+%% Paragraph based list types that are generally more compact than the
+%% LaTeX standard and easy to adjust
+%% \setdefaultleftmargin{2em}{}{}{}{}{}  % change margins for the levels
+%% \begin{asparaenum}  % enumeration
+%% \begin{inparaenum} % enumerate inside of paragraph text
+%% \begin{compactenum} % compressed enum
+%%    replace enum with item for itemized environments
+%%    replace enum with desc for descriptive environments
+%%    replace enum with blank if you want formatted as if no list
+
+
+%%% Typesetting algorithms and pseudocode
+%% WARNING!  You cannot have both pseudocode and algorithmic packages 
+%% They conflict!!!!
+%% http://www.macfreek.nl/memory/LaTeX_package_conflicts
+
+%\RequirePackage{pseudocode}
+%% Package for typesetting pseudocode
+%\RequirePackage{algorithm}
+%\RequirePackage{algorithmic}
+
+%\RequirePackage[overload]{textcase}
+%% Case changing that does not affect math
+%% \MakeTextUppercase{}
+%% \MakeTextLowercase{}
+
+%% PUT YOUR PACKAGES HERE
+%% If you put theme here, then it is easy to merge with any updates
+%% from the main template
+
+
+%% END OF PERSONAL PACKAGES
+
+% Where do your graphics live?  If they are in this list, you don't
+% need to put the path when you use \includegraphics
+% Uncomment this if you need to modify the search paths.
+%\graphicspath{{graphics/}{Graphics/}{./}}
+
+%% Code listings and file paths
+% Here are listings macros I use a lot
+\newcommand{\shcmd}{\lstinline}  
+% for file paths use \path from the url package
+% \path{\\AFS\.rnd.ru.is\course\T-411-MECH}
+
+%% The pre-defined languages we want to use.
+\lstloadlanguages{Java, XML}
+
+%% We can also define a new language (so we can change some formatting)
+%% Be careful you do not make a recursive style nor language!!
+%% You can just use the XML language, or in this case create a "dialect"
+\lstdefinelanguage[android]{XML}%
+{  % 
+  sensitive=false,% case-insensitive
+  classoffset=0,  % first class
+  morekeywords={manifest},
+  classoffset=1,  % second class
+  morekeywords={uses, sdk, application, activity},
+  keywordstyle=\color{blue}, % set a color
+  classoffset=0, % reset back to 0
+}
+
+%% We use listing styles to adjust the appearance
+%% Be careful you do not make a recursive style nor language!!
+%% This makes use of the listing package to show program output
+\lstdefinestyle{progoutput}{
+  language=sh, 
+  frame=single, 
+  breaklines=true,
+  prebreak=\textbackslash,
+  captionpos=b,   
+  basicstyle=\small\ttfamily, 
+  showstringspaces=false 
+}
+
+% English/latin contractions (need italics )
+\newcommand{\etal}{\textit{et al.}\xspace}
+\newcommand{\aka}{\textit{a.k.a.}\xspace}
+\newcommand{\adhoc}{\textit{ad hoc}\xspace}
+
+% The abbreviation e.g. (from the Latin exempli gratia, 'for sake of an
+% example') indicates that one or more examples follow of what has been
+% mentioned in general terms: It could be cheaper by public transport,
+% e.g. by train or coach. The abbreviation i.e. (from Latin id est,
+% 'that is') indicates that an explanation follows of what has just been
+% mentioned: Gratuities are discretionary, i.e. you don't have to leave
+% a tip if you don't want to.
+% Copyright from the Hutchinson Encyclopaedia.
+% Helicon Publishing LTD 2006.
+% All rights reserved.
+% http://www.tiscali.co.uk/reference/dictionaries/english/data/d0081995.html
+\newcommand{\ie}{\textit{i.e.}\xspace} % one specific example
+\newcommand{\eg}{\textit{e.g.}\xspace} % general example
+
+%% nicebox
+% put a box around some text or a table by making
+% a minipage
+\newcommand{\nicebox}[1]{\fbox{\begin{minipage}[t]{\linewidth}#1\end{minipage}}}
+
+%%% enumnoreset
+%% a new list environment that does not reset unless you tell it to
+\newcounter{enumnoreset}
+\newcommand{\enumnoresetreset}{\setcounter{enumnoreset}{1}}
+\enumnoresetreset{}
+
+\newenvironment{enumnoreset}[1]
+{ \begin{list}
+    {#1\arabic{enumnoreset}.\hfil \addtocounter{enumnoreset}{1}}
+    { \setlength{\listparindent}{0pt}\setlength{\itemindent}{0pt}
+      \settowidth{\labelwidth}{#1 10.}
+      \setlength{\leftmargin}{\labelwidth+\labelsep}
+    }
+  }
+  { \end{list}}
+
+%%% frlist
+%% Mechanical Engineering Functional Requirements list
+\newenvironment{frlist}
+{\begin{enumnoreset}{FR}}
+{\end{enumnoreset}}
+
+%%% example
+%% Environment for separating examples
+\newenvironment{example}
+{\begin{quote}}
+{\end{quote}}
+
+% Abusing the \url{} function to allow SmallCaps
+%\newcommand{\scurl}[1]{\def\UrlFont{\sc}\url{#1}\def\UrlFont{\tt}}
+\newcommand{\scurl}[1]{{\sc \urlstyle{same}\url{#1}}}
+
+% Force the skipping of a line (TeX code)
+\newcommand{\skipline}{\vskip{\baselineskip}}
+\newcommand{\skiplines}[1]{\vskip{#1*\baselineskip}}
+
+% this is a placeholder until I figure out how to make the quotes look nice.
+\newcommand{\chapterquote}[2]{%
+  \begin{quote} \it``#1''#2 \end{quote}}
+\newcommand{\chapterquotation}[2]{%
+  \begin{quotation} \it``#1''#2 \end{quotation}}
+
+
+%%% Macros to Ignore Typesetting errors when needed
+\newcommand{\ignorebadness}{
+  \vfuzz=10in  % ignore overfull \vbox
+  \vbadness=10000 % ignore underfull \vbox
+  \hfuzz=10in  % ignore overfull \hbox
+  \hbadness=10000 % ignore underfull \hbox
+}
+
+\newcommand{\checkbadness}{
+  \vfuzz = 0.25in
+  \vbadness = 1000
+  \hfuzz = 0.25in
+  \hbadness = 1000
+}
+
+%%%% Various useful things from hepthesis
+%%%% Andy Buckley<andy@insecnation.org>
+
+%%% Typesets a chapter quote according to that style.
+
+%\DeclareRobustCommand{\chapterquote}[2]{%
+%  \noindent\emph{``#1''}%
+%  \newline%
+%  \indent --- #2%
+%  \vspace{1cm}%
+%}
+
+%% In-document references
+\DeclareRobustCommand{\Chapter}{Chapter\xspace}
+\DeclareRobustCommand{\Section}{Section\xspace}
+\DeclareRobustCommand{\Appendix}{Appendix\xspace}
+\DeclareRobustCommand{\Figure}{Figure\xspace}
+\DeclareRobustCommand{\Table}{Table\xspace}
+\DeclareRobustCommand{\Equation}{equation\xspace}
+\DeclareRobustCommand{\Reference}{reference\xspace}
+%% Standard way to refer to a page number
+\DeclareRobustCommand{\Page}{page\xspace}
+
+%% Reference terms with built-in reference
+\DeclareRobustCommand{\ChapterRef}[1]{\Chapter~\ref{#1}}
+\DeclareRobustCommand{\SectionRef}[1]{\Section~\ref{#1}}
+\DeclareRobustCommand{\AppendixRef}[1]{\Appendix~\ref{#1}}
+\DeclareRobustCommand{\FigureRef}[1]{\Figure~\ref{#1}}
+\DeclareRobustCommand{\TableRef}[1]{\Table~\ref{#1}}
+\DeclareRobustCommand{\EquationRef}[1]{\Equation~\eqref{#1}}
+\DeclareRobustCommand{\ReferenceRef}[1]{\Reference~\cite{#1}}
+\DeclareRobustCommand{\PageRef}[1]{\Page~\pageref{#1}}
+
+%% Figure widths
+\newlength{\smallfigwidth}
+\newlength{\mediumfigwidth}
+\newlength{\largefigwidth}
+\newlength{\hugefigwidth}
+\setlength{\smallfigwidth}{0.45\textwidth}
+\setlength{\mediumfigwidth}{0.6\textwidth}
+\setlength{\largefigwidth}{0.75\textwidth}
+\setlength{\hugefigwidth}{0.9\textwidth}
+%% Figure width aliases
+\newlength{\littlefigwidth}
+\newlength{\bigfigwidth}
+\setlength{\littlefigwidth}{\smallfigwidth}
+\setlength{\bigfigwidth}{\largefigwidth}
+
+% When indexing, this sequence is very common for acronyms
+\newcommand{\indexacro}[2]{\index{#2|see{#1}}\index{#1}}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "DEGREE-NAME-YEAR"
+%%% End:
+
+%%% begin siggis imports
+\usepackage{import}
+%%% end

@@ -1,0 +1,94 @@
+%% Some elements have different names on the RU Masters rules
+%% They will be annotated with RUM: "name"
+\frontmatter{} % setup formatting at beginning
+
+%\frontcover{}%%If you want to see what it looks like with the printed cover
+%% TODO:  link to fill-in PDF file on RU website
+
+\frontrequiredpages{}%% the various signaturepages and abstract
+%%% WARNING:  if you get an error on the previous line, it is probably because
+%%% you put a bad macro or something strange in a title, author, or abstract.
+
+\ifdraft{\coverchapter{Important!!!  Read the Instructions!!!} If you
+  have not already done so, \LaTeX{} the \path{instructions.tex} to
+  learn how to setup your document and use some of the features.  You
+  can see a (somewhat recent) rendered PDF of the instructions included in this folder at \path{instructions-publish.pdf}.
+  There is also more information on working with \LaTeX{} at
+  \url{http://samvinna.ru.is/project/htgaru/how-to-get-around-projects-publish.pdf}.
+  This includes common problems and fixes.
+
+  This page will disappear in anything other than draft mode.}{}
+
+
+
+%% Dedication is optional, comment out if it is absent
+\begin{dedications}
+  I dedicate this to my spouse/child/pet/power animal.
+\end{dedications}
+
+\enableindents{}% turn on/off paragraph indents
+\coverchapter{Acknowledgements} 
+\begin{quotation}
+So long, and thanks for all the fish.
+\end{quotation}
+\vspace{\baselineskip}
+
+\draftnote{Acknowledgements are optional; comment this chapter out if they are absent
+  Note that it is important to acknowledge any funding that helped in the work}
+
+This work was funded by \the\year~RANNIS grant ``Survey of man-eating Minke whales'' 1415550.
+Additional equipment was generously donated by the Icelandic Tourism Board.
+
+\coverchapter{Preface}
+
+This dissertation is original work by the author, Sigurður Helgason.
+
+  
+\draftnote{The preface is an optional element
+  explaining a little who performed what work.  See
+  \url{https://www.grad.ubc.ca/sites/default/files/materials/thesis_sample_prefaces.pdf}
+  for suggestions.
+  
+  List of publications as part of the preface is
+  optional unless elements of the work have already been published.
+  It should be a comprehensive list of all publications in which
+  material in the thesis has appeared, preferably with references to
+  sections as appropriate.  This is also a good place to state
+  contribution of student and contribution of others to the work
+  represented in the thesis.}
+
+%\coverchapter{Publications}
+%% RUM: Not mentioned, this was found in the CS thesis template.  
+%% Maybe more applicable to PhD dissertations?
+%%% Probably a duplication from before Preface became standard.
+
+\starttables{}% setup formatting
+%% TOC, list of figures and list of tables are required
+\tableofcontents{}\clearpage%%RUM: "Table of contents"
+\listoffigures{}\clearpage%%RUM: "List of figures"
+\listoftables{}\clearpage%%RUM: "List of tables"
+
+%\coverchapter{List of drawings and enclosed material}
+%RUM: "List of drawings and enclosed material, e.g. CD(as appropriate)"
+
+\listoffixmes{}
+% if using fixme package, lists what needs to be done
+
+%% The list of abbreviations is an example of a special list
+%% Other lists may be added, such as lists of algorithms, symbols, theorems, etc.
+%% IN CS PhD, this is sometimes centered.
+\coverchapter{List of Abbreviations}%%RUM: Not mentioned
+\begin{tabular}{ll}
+MSc &Masters of Science\\
+DR & Diabetic Retinopathy\\
+ML & Machine Learning\\
+AI & Artificial Intelligence\\
+\end{tabular}
+
+% \coverchapter{List of Symbols}%%RUM: Not mentioned
+% \begin{tabular}{lll}
+% Symbol &Description &Value/Units\\
+% $E$ &Energy &\si{\joule}\\
+% $m$ &Mass &\si{gram}\\
+% $c$ &Speed of Light &\SI{2.99E8}{\meter\per\second\square}\\
+% \end{tabular}
