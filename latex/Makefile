@@ -3,7 +3,7 @@
 # How many tries before giving up on resolution of references:
 TRIES=7
 
-# use the top one to make it automatically duplex.  
+# use the top one to make it automatically duplex.
 DUPLEX=-h sty/duplex
 #DUPLEX=
 
@@ -27,7 +27,7 @@ BIBPROG:=bibtex  # can also be bibtex or bibtex8
 
 # ATTENTION!
 # File-extensions to delete recursive from here
-EXTENSION=acn acr alg aux bbl bcf blg glo glg gls glsdefs idx ind ilg ist lof log lol lot lox mw out run.xml toc sbl slg sym 
+EXTENSION=acn acr alg aux bbl bcf blg glo glg gls glsdefs idx ind ilg ist lof log lol lot lox mw out run.xml toc sbl slg sym
 
 #############################
 
@@ -36,7 +36,7 @@ EXTENSION=acn acr alg aux bbl bcf blg glo glg gls glsdefs idx ind ilg ist lof lo
 ##### Targets for main ###############
 ######################################
 
-all: pdf
+all: pdf cleanExtra
 
 pdf:
 	${PDFLATEX} ${TARGET}
@@ -55,7 +55,7 @@ html: ${TEXSRC} ${PDFSRC}
 	-antialias -html_version 4.0 \
 	${TARGET}.tex
 
-biblio:	
+biblio:
 	echo "Running ${BIBPROG} on ${TARGET}"
 	${BIBPROG} ${TARGET}
 
@@ -69,6 +69,15 @@ clean:
 	find `pwd` -name \*\.$${EXT} -exec rm -v \{\} \; ;\
 	done
 	rm -f ${TARGET}.{dvi,pdf*,ps*}
+	rm -f www/*\.*
+	rm -f *-blx.bib
+
+cleanExtra:
+	for EXT in ${EXTENSION}; \
+	do \
+	find `pwd` -name \*\.$${EXT} -exec rm -v \{\} \; ;\
+	done
+	rm -rf ${TARGET}.{dvi,ps*}
 	rm -f www/*\.*
 	rm -f *-blx.bib
 

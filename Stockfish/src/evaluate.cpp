@@ -747,9 +747,10 @@ Value Evaluation<T>::value() {
   // Probe the material hash table
   me = Material::probe(pos);
 
+  // skipping transposition table check ---- siggi
   // If we have a specialized evaluation function for the current material
   // configuration, call it and return.
-  if (me->specialized_eval_exists()) return me->evaluate(pos);
+  // if (me->specialized_eval_exists()) return me->evaluate(pos);
 
   // Initialize score by reading the incrementally updated scores included in
   // the position object (material + piece square tables) and the material
@@ -762,13 +763,20 @@ Value Evaluation<T>::value() {
 
   // Early exit if score is high
   Value v = (mg_value(score) + eg_value(score)) / 2;
-  if (abs(v) > LazyThreshold + pos.non_pawn_material() / 64)
-    return pos.side_to_move() == WHITE ? v : -v;
+
+  // skipping lazy stop ---- siggi
+  // if (abs(v) > LazyThreshold + pos.non_pawn_material() / 64)
+  // return pos.side_to_move() == WHITE ? v : -v;
 
   // Main evaluation begins here
 
   initialize<WHITE>();
   initialize<BLACK>();
+
+  Score piecesW = pieces<WHITE, KNIGHT>() - pieces<BLACK, KNIGHT>() +
+                  pieces<WHITE, BISHOP>() - pieces<BLACK, BISHOP>() +
+                  pieces<WHITE, ROOK>() - pieces<BLACK, ROOK>() +
+                  pieces<WHITE, QUEEN>() - pieces<BLACK, QUEEN>();
 
   // Pieces should be evaluated first (populate attack tables)
   score += pieces<WHITE, KNIGHT>() - pieces<BLACK, KNIGHT>() +
@@ -791,6 +799,23 @@ Value Evaluation<T>::value() {
 
   v /= PHASE_MIDGAME;
 
+  auto kingwmg = mg_value(king<WHITE>());
+  auto kingbmg = mg_value(king<BLACK>());
+  auto kingweg = eg_value(king<WHITE>());
+  auto kingbeg = eg_value(king<BLACK>());
+  auto pawnwmg = mg_value(pe->pawn_score(WHITE));
+  auto pawnbmg = mg_value(pe->pawn_score(BLACK));
+  auto pawnweg = eg_value(pe->pawn_score(WHITE));
+  auto pawnbeg = eg_value(pe->pawn_score(BLACK));
+
+  // Here I should start writing to csv all the values
+
+  std::ofstream file("data.csv", std::fstream::app);
+  file << pos.fen() << "," << kingwmg << "," << kingweg << "," << kingbmg << ","
+       << kingbeg << "," << pawnwmg << "," << pawnweg << "," << pawnbmg << ","
+       << pawnbeg << std::endl;
+
+  file.close();
   // In case of tracing add all remaining individual evaluation terms
   if (T) {
     Trace::add(MATERIAL, pos.psq_score());
@@ -810,26 +835,6 @@ Value Evaluation<T>::value() {
 /// evaluation of the position from the point of view of the side to move.
 
 Value Eval::evaluate(const Position& pos) {
-  std::ofstream file("data.csv", std::fstream::app);
-  file << pos.fen() << ",";
-  std::memset(scores, 0, sizeof(scores));
-  pos.this_thread()->contempt = SCORE_ZERO;  // Reset any dynamic contempt
-
-  Value v = Evaluation<TRACE>(pos).value();
-
-  v = pos.side_to_move() == WHITE
-          ? v
-          : -v;  // Trace scores are from white's point of view
-
-  file << std::showpoint << std::noshowpos << std::fixed << std::setprecision(2)
-       << Term(MATERIAL) << "," << Term(IMBALANCE) << "," << Term(PAWN) << ","
-       << Term(KNIGHT) << "," << Term(BISHOP) << "," << Term(ROOK) << ","
-       << Term(QUEEN) << "," << Term(MOBILITY) << "," << Term(KING) << ","
-       << Term(THREAT) << "," << Term(PASSED) << "," << Term(SPACE) << ","
-       << Term(INITIATIVE) << "," << Term(TOTAL) << "$";
-
-  file.close();
-
   return Evaluation<NO_TRACE>(pos).value();
 }
 
