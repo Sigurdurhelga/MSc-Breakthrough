@@ -1,4 +1,4 @@
-import numpy as np
+#import numpy as np
 from monte_carlo.mctsnode import Node
 from copy import deepcopy
 import random
@@ -20,14 +20,14 @@ class BTBoard(Node):
         print("BOARD STATE")
         print("Turn: ", "White" if self.turn == BREAKTHROUGHWHITE else "Black")
         for row in self.board:
-            print("".join([str[c] for c in row]))
+            print("".join([str(c) for c in row]))
         print("==================")
 
     def copy_board(self):
         return deepcopy(self.board)
 
     def find_random_child(self):
-        return random.Choice(self.children)
+        return random.choice(self.children)
 
     def gen_move(self, fpos, tpos):
         fposy, fposx = fpos

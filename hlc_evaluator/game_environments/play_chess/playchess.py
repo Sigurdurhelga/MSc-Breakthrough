@@ -11,7 +11,7 @@ class PlayChess(Node):
         '0-1': -1
     }
 
-    def __init__(self, fen=""):
+    def __init__(self, fen="", player_turn=None):
         if fen:
             self.board = chess.Board(fen)
         else:
