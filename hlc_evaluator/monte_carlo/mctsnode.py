@@ -1,41 +1,32 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
-class Node(ABC):
+import numpy as np
+from game_environments.gamenode import GameNode
+
+class Node():
   """
-    Generic class for states in a game to do MCTS on
+    Generic class for nodes within an MCTS tree
   """
+  def __init__(self, gamestate: GameNode, action=""):
+    self.N = 0
+    self.Q = 0.0
+    self.gamestate = gamestate
+    self.action = action
+    self.is_expanded = False
+    self.children = []
 
-  @abstractmethod
-  def get_children(self) -> set:
-    "Returns all children for a state (after applying an action)"
-    return set()
+  def expand(self) -> None:
+    "fills the children list in the node"
+    assert not self.is_expanded, "calling expand on expanded node is bad"
+    # if self.is_expanded:
+      # return
+    for move in self.gamestate.legal_moves():
+      self.children.append(Node(self.gamestate.execute_move(move), move))
+    self.is_expanded = True
 
-  @abstractmethod
-  def find_random_child(self) -> object:
-    "Returns a random child for this state"
-    return None
+  def is_expanded(self) -> bool:
+    pass
 
-  @abstractmethod
-  def is_terminal(self) -> bool:
-    "Returns true if this state is a terminal state"
-    return True
-
-  @abstractmethod
-  def reward(self) -> int:
-    """returns the reward for the current node (should be a terminal node
-    otherwise methods other than mcts would be better)"""
-    return 0
-
-  @abstractmethod
-  def __str__(self) -> str:
-    "A node should have a string representation (it's used in error messages)"
-    return ""
-
-  @abstractmethod
   def __hash__(self) -> int:
-    "a node has to be hashable to do efficient lookup"
-    return 1
+    return hash(self.gamestate)
 
-  @abstractmethod
-  def __eq__(self, other) -> bool:
-    "We need comparison of nodes"
-    return True
