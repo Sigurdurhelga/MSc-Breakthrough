@@ -1,84 +1,80 @@
-#import numpy as np
-from monte_carlo.mctsnode import Node
-from copy import deepcopy
+import numpy as np
+from copy import deepcopy, copy
 import random
+from collections import namedtuple
 
-BREAKTHROUGHWHITE = 1
-BREAKTHROUGHBLACK = 2
-BREAKTHROUGHEMPTY = 0
+from game_environments.gamenode import GameNode
+
+gameconfig = namedtuple("gameconfig", "WHITE BLACK EMPTY")
+config = gameconfig(-1,1,0)
 
 
-class BTBoard(Node):
-    def __init__(self, board_list, player_turn):
+class BTBoard(GameNode):
+    def __init__(self, board_list, player):
         self.board = board_list
         self.rows = len(board_list)
         self.cols = len(board_list[0])
-        self.turn = player_turn
+        self.player = player
         self.terminal = self.is_terminal_helper()
 
-    def print_board(self):
-        print("BOARD STATE")
-        print("Turn: ", "White" if self.turn == BREAKTHROUGHWHITE else "Black")
-        for row in self.board:
-            print("".join([str(c) for c in row]))
-        print("==================")
 
-    def copy_board(self):
-        return deepcopy(self.board)
-
-    def find_random_child(self):
-        return random.choice(self.children)
-
-    def gen_move(self, fpos, tpos):
-        fposy, fposx = fpos
-        tposy, tposx = tpos
-        new_board = self.copy_board()
-        new_board[tposy][tposx] = new_board[fposy][fposx]
-        new_board[fposy][fposx] = BREAKTHROUGHEMPTY
-        next_player = BREAKTHROUGHWHITE if self.turn == BREAKTHROUGHBLACK else BREAKTHROUGHBLACK
-        b_new_board = BTBoard(new_board, next_player)
-        return b_new_board
-
-    def get_children(self) -> set:
-        children = set()
-        for y in range(self.rows - 1, 0, -1):  # only go up to second to last
+    def legal_moves(self) -> list:
+        d = self.player
+        moves = []
+        for y in range(self.rows):
             for x in range(self.cols):
-                if self.board[y][x] == self.turn:
-                    for d in self.get_dirs((y, x)):
-                        children.add(self.gen_move((y, x), d))
-        return children
+                if self.board[y][x] != self.player:
+                    continue
+                if y + d >= self.rows or y + d < 0:
+                    continue
+                if x > 0:
+                    if self.board[y+d][x-1] == (0-self.player):
+                        moves.append((y,x,y+d,x-1))
+                if x < self.cols-2:
+                    if self.board[y+d][x+1] == (0-self.player):
+                        moves.append((y,x,y+d,x+1))
+                if self.board[y+d][x] == config.EMPTY:
+                    moves.append((y,x,y+d,x))
+        return moves
 
-    def get_dirs(self, pos) -> list:
-        "pos is coordinates in list [y,x]"
-        dirs = []
-        do_left = pos[1] > 0
-        do_right = pos[1] < (self.cols - 1)
-        print("getdirs with ", pos)
-        ymod = -1 if self.turn == BREAKTHROUGHWHITE else 1  # y axis mod
-        enemy = BREAKTHROUGHWHITE if self.turn == BREAKTHROUGHBLACK else BREAKTHROUGHBLACK
-        if do_left and self.board[pos[0] + ymod][pos[1] - 1] == enemy:
-            dirs.append([pos[0] + ymod, pos[1] - 1])
-        if do_right and self.board[pos[0] + ymod][pos[1] + 1] == enemy:
-            dirs.append([pos[0] + ymod, pos[1] + 1])
-        if self.board[pos[0] + ymod][pos[1]] == BREAKTHROUGHEMPTY:
-            dirs.append([pos[0] + ymod, pos[1]])
-        return dirs
-
-    def is_terminal_helper(self) -> bool:
-        return any(x == 2 for x in self.board[0]) \
-               or any(x == 1 for x in self.board[-1]) \
-               or len(self.legal_moves()) == 0
+    def execute_move(self,move):
+        new_board = np.copy(self.board)
+        y1,x1,y2,x2 = move
+        new_board[y2,x2] = new_board[y1,x1]
+        new_board[y1,x1] = config.EMPTY
+        return BTBoard(new_board, 0-self.player)
 
     def is_terminal(self) -> bool:
         return self.terminal
 
     def reward(self) -> int:
-        assert self.is_terminal()
-        if any(x == 2 for x in self.board[0]):
-            return 1
-        if any(x == 1 for x in self.board[-1]):
+        if any(x == config.BLACK for x in self.board[-1]):
             return -1
+        if any(x == config.WHITE for x in self.board[0]):
+            return 1
         return 0
+
+    def is_terminal_helper(self) -> bool:
+        # print("calling is terminal helper on \n",self.board)
+        # print("black on edge,",any(x == config.BLACK for x in self.board[-1]))
+        # print("black on edge,",any(x == config.WHITE for x in self.board[0]))
+        # print("legal moves,",self.legal_moves())
+        return any(x == config.BLACK for x in self.board[-1]) \
+                or any(x == config.WHITE for x in self.board[0]) \
+                or len(self.legal_moves()) == 0
+
+    def print_board(self):
+        print("BOARD STATE")
+        print("Turn: ", "White" if self.player == config.WHITE else "Black")
+        print("Terminal:",self.terminal)
+        for row in self.board:
+            print("".join([str(c) for c in row]))
+        print("------------------")
+        print("legal moves:",self.legal_moves())
+        print("==================")
+
+    def __copy__(self):
+        return np.copy(self.board)
 
     def __str__(self) -> str:
         return "|".join(["".join([str(c) for c in row]) for row in self.board])
