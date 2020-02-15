@@ -12,21 +12,21 @@ class Node():
     self.Q = 0.0
     self.gamestate = gamestate
     self.action = action
-    self.is_expanded = False
+    self.expanded = False
     self.children = []
 
   def expand(self) -> None:
     "fills the children list in the node"
-    assert not self.is_expanded, "calling expand on expanded node is bad"
+    assert not self.is_expanded(), "calling expand on expanded node is bad"
     # if self.is_expanded:
       # return
     for move in self.gamestate.legal_moves():
       self.children.append(Node(self.gamestate.execute_move(move), move))
-    self.is_expanded = True
+    self.expanded = True
 
   def is_expanded(self) -> bool:
-    pass
+    return self.expanded
 
   def __hash__(self) -> int:
-    return hash(self.gamestate)
+    return hash(self.gamestate)+hash(self.action)
 

@@ -18,6 +18,16 @@ BREAKTHROUGH_INITIAL_STATE = (np.array([
                   [BTconfig.WHITE,BTconfig.WHITE,BTconfig.WHITE,BTconfig.WHITE],
                   [BTconfig.WHITE,BTconfig.WHITE,BTconfig.WHITE,BTconfig.WHITE]]), BTconfig.WHITE)
 
+BREAKTHROUGH_INITIAL_STATE = (np.array([
+                  [BTconfig.BLACK,BTconfig.BLACK,BTconfig.BLACK],
+                  [BTconfig.BLACK,BTconfig.BLACK,BTconfig.BLACK],
+                  [BTconfig.EMPTY,BTconfig.EMPTY,BTconfig.EMPTY],
+                  [BTconfig.EMPTY,BTconfig.EMPTY,BTconfig.EMPTY],
+                  [BTconfig.EMPTY,BTconfig.EMPTY,BTconfig.EMPTY],
+                  [BTconfig.WHITE,BTconfig.WHITE,BTconfig.WHITE],
+                  [BTconfig.WHITE,BTconfig.WHITE,BTconfig.WHITE]]), BTconfig.WHITE)
+
+
 CHESS_INITIAL_STATE = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 GAME = {
@@ -40,7 +50,7 @@ def play_game(white_think, black_think, verbose=False):
     black_think reference the amount of mcts rollout
     each player does
     """
-    print("playgame started with {} {}".format(white_think, black_think))
+    # print("playgame started with {} {}".format(white_think, black_think))
     # initial node (root)
     curr_node = Node(selected_game.game_class(*selected_game.initial_state), "START")
     if whiteplayer:
@@ -53,14 +63,17 @@ def play_game(white_think, black_think, verbose=False):
         if verbose:
             print("===================")
             whiteplayer.root.gamestate.print_board()
+        # selection / expantion / rollout
         whiteplayer.rollout(white_think)
+        # greedy select best
         whiteplayer.move_to_best_child()
+        curr_node = whiteplayer.root
+
         if verbose:
             print("did action: ",whiteplayer.root.action)
             whiteplayer.root.gamestate.print_board()
             print("===================")
         if whiteplayer.root.gamestate.is_terminal():
-            print("terminal after whitemove")
             break
 
         if not blackplayer:
@@ -71,34 +84,51 @@ def play_game(white_think, black_think, verbose=False):
         if verbose:
             print("===================")
             blackplayer.root.gamestate.print_board()
+
+        # selection / expantion / rollout
         blackplayer.rollout(black_think)
+        # greedy select best
         blackplayer.move_to_best_child()
+        curr_node = blackplayer.root
+
         if verbose:
             print("did action: ",blackplayer.root.action)
             blackplayer.root.gamestate.print_board()
             print("===================")
         if blackplayer.root.gamestate.is_terminal():
-            print("terminal after blackmove")
             break
-        whiteplayer.move_to_child(blackplayer.root.action)
 
-    #print("END RESULTS WHITE")
-    #print(whiteplayer.Ns)
-    #print(whiteplayer.Qs)
-    #print("END RESULTS BLACK")
-    #print(blackplayer.Ns)
-    #print(blackplayer.Qs)
+        whiteplayer.move_to_child(blackplayer.root.action)
+    # print("END game white")
+    # whiteplayer.root.gamestate.print_board()
+    # print("===================")
+    # print("END game black")
+    # blackplayer.root.gamestate.print_board()
+    # print("===================")
     return curr_node.gamestate.reward()
-wins = {
-    -1: 0,
-    0: 0,
-    1: 0
+
+results_start = {
+    "black": 0,
+    "white": 0,
+    "tie": 0,
 }
-for i in range(3):
-    wins[play_game(80, 1)] += 1
-    print(wins)
-    print("INFO")
-    print("Whiteplayer initial state info", whiteplayer.Qs[initial_state], whiteplayer.Ns[initial_state])
-    print("blackplayer initial state info", blackplayer.Qs[initial_state], blackplayer.Ns[initial_state])
-    print("END RESULTS BLACK")
-print(wins)
+total_results = {}
+from tqdm import tqdm
+
+for i in tqdm(range(1,2)):
+    for j in tqdm(range(1,2)):
+        results = results_start.copy()
+        for _ in tqdm(range(10)):
+            winner = play_game(100,1)
+            if winner == 0:
+                results["tie"] += 1
+            elif winner == 1:
+                results["white"] += 1
+            else:
+                results["black"] += 1
+        total_results[f"{i},{j}"] = results
+import json
+from datetime import time
+
+with open("results3.json", "w") as f:
+    f.write(json.dumps(total_results))

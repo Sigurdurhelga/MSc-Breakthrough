@@ -12,10 +12,10 @@ class MCTS():
     self.Ns = defaultdict(int)
     # self.Usa = defaultdict(float)
     self.temp = 0.1
-    self.negamaxing = True
+    self.negamaxing = negamaxing
 
   def move_to_best_child(self):
-      assert self.root.is_expanded, "get best child on unexpanded node, is bad"
+      assert self.root.is_expanded(), "get best child on unexpanded node, is bad"
       children = self.root.children
       child_scores = [self.Qs[child] for child in children]
       if self.negamaxing:
@@ -25,7 +25,7 @@ class MCTS():
       self.root = children[best_move]
 
   def move_to_child(self, move):
-    if not self.root.is_expanded:
+    if not self.root.is_expanded():
       self.root.expand()
     children = self.root.children
     for child in children:
@@ -38,6 +38,7 @@ class MCTS():
     self.root = node
 
   def rollout(self, rollout_amount=10):
+    rollout_length_sum = 0
     for _ in range(rollout_amount):
       curr_node = self.root
       path = []
@@ -45,7 +46,7 @@ class MCTS():
       while True:
         path.append(curr_node)
         self.Ns[curr_node] += 1
-        if not curr_node.is_expanded:
+        if not curr_node.is_expanded():
           break
         if curr_node.gamestate.is_terminal():
           uct_terminal = True
@@ -60,6 +61,7 @@ class MCTS():
         #temp_PSA = 1
 
         curr_node = curr_node.children[np.argmax(child_scores)]
+      rollout_length_sum += len(path)
 
       if uct_terminal:
         reward = path[-1].gamestate.reward()
@@ -71,6 +73,7 @@ class MCTS():
         end.expand()
         reward = self.simulate(end)
         self.backpropagate(reward, path) # every iteration because of negamaxing
+    # print("average rollout length",rollout_length_sum/rollout_amount)
 
   def simulate(self, node):
     curr_node = deepcopy(node.gamestate)
@@ -80,7 +83,5 @@ class MCTS():
     return curr_node.reward()
 
   def backpropagate(self, reward, path):
-    if self.negamaxing:
-      reward = -reward
     for state in reversed(path):
       self.Qs[state] += reward

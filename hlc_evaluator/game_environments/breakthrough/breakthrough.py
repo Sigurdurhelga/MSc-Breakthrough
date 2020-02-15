@@ -48,9 +48,9 @@ class BTBoard(GameNode):
         return self.terminal
 
     def reward(self) -> int:
-        if any(x == config.BLACK for x in self.board[-1]):
+        if any(x == config.BLACK for x in self.board[-1,:]):
             return -1
-        if any(x == config.WHITE for x in self.board[0]):
+        if any(x == config.WHITE for x in self.board[0,:]):
             return 1
         return 0
 
@@ -59,16 +59,20 @@ class BTBoard(GameNode):
         # print("black on edge,",any(x == config.BLACK for x in self.board[-1]))
         # print("black on edge,",any(x == config.WHITE for x in self.board[0]))
         # print("legal moves,",self.legal_moves())
-        return any(x == config.BLACK for x in self.board[-1]) \
-                or any(x == config.WHITE for x in self.board[0]) \
+        return any(x == config.BLACK for x in self.board[-1,:]) \
+                or any(x == config.WHITE for x in self.board[0,:]) \
                 or len(self.legal_moves()) == 0
 
     def print_board(self):
         print("BOARD STATE")
         print("Turn: ", "White" if self.player == config.WHITE else "Black")
-        print("Terminal:",self.terminal)
+        print("Terminal:",self.terminal,end=" | ")
+        if self.terminal:
+            print("Winner:", "black" if any(x == config.BLACK for x in self.board[-1,:]) else "white" if any(x == config.WHITE for x in self.board[0,:]) else "tie")
+        else:
+            print()
         for row in self.board:
-            print("".join([str(c) for c in row]))
+            print("".join(["w" if c == config.WHITE else "b" if c == config.BLACK else "·" for c in row]))
         print("------------------")
         print("legal moves:",self.legal_moves())
         print("==================")
@@ -77,7 +81,7 @@ class BTBoard(GameNode):
         return np.copy(self.board)
 
     def __str__(self) -> str:
-        return "|".join(["".join([str(c) for c in row]) for row in self.board])
+        return "|".join(["".join(["w" if c == config.WHITE else "b" if c == config.BLACK else " " for c in row]) for row in self.board])+"|{}".format(self.player)
 
     def __hash__(self) -> int:
         return str.__hash__(self.__str__())
