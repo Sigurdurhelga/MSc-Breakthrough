@@ -1,8 +1,12 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from copy import copy
+import numpy as np
 
 class GameNode(ABC):
+  """
+    Generic Abstract Class for a game environment
+  """
   @abstractmethod
   def is_terminal(self) -> bool:
     pass
@@ -17,6 +21,14 @@ class GameNode(ABC):
 
   @abstractmethod
   def execute_move(self, move) -> GameNode:
+    pass
+
+  @abstractmethod
+  def encode_state(self) -> np.ndarray:
+    pass
+
+  @abstractmethod
+  def get_move_amount(self) -> int:
     pass
 
   @abstractmethod

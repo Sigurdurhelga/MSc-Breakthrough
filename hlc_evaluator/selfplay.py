@@ -5,6 +5,9 @@ from game_environments.breakthrough.breakthrough import BTBoard, config as BTcon
 
 from collections import namedtuple
 import numpy as np
+from tqdm import tqdm
+import json
+from datetime import time
 
 game_setup = namedtuple("gamesetup", "game_class initial_state")
 
@@ -99,12 +102,6 @@ def play_game(white_think, black_think, verbose=False):
             break
 
         whiteplayer.move_to_child(blackplayer.root.action)
-    # print("END game white")
-    # whiteplayer.root.gamestate.print_board()
-    # print("===================")
-    # print("END game black")
-    # blackplayer.root.gamestate.print_board()
-    # print("===================")
     return curr_node.gamestate.reward()
 
 results_start = {
@@ -113,22 +110,29 @@ results_start = {
     "tie": 0,
 }
 total_results = {}
-from tqdm import tqdm
 
-for i in tqdm(range(1,2)):
-    for j in tqdm(range(1,2)):
-        results = results_start.copy()
-        for _ in tqdm(range(10)):
-            winner = play_game(100,1)
-            if winner == 0:
-                results["tie"] += 1
-            elif winner == 1:
-                results["white"] += 1
-            else:
-                results["black"] += 1
-        total_results[f"{i},{j}"] = results
-import json
-from datetime import time
+for i in tqdm(range(1,10)):
+    results = results_start.copy()
+    for _ in tqdm(range(10)):
+        winner = play_game(20,5)
+        if winner == 0:
+            results["tie"] += 1
+        elif winner == 1:
+            results["white"] += 1
+        else:
+            results["black"] += 1
+    total_results[f"1.{i}"] = results
 
-with open("results3.json", "w") as f:
+for i in tqdm(range(1,10)):
+    results = results_start.copy()
+    for _ in tqdm(range(10)):
+        winner = play_game(50,5)
+        if winner == 0:
+            results["tie"] += 1
+        elif winner == 1:
+            results["white"] += 1
+        else:
+            results["black"] += 1
+    total_results[f"2.{i}"] = results
+with open("results5.json", "w") as f:
     f.write(json.dumps(total_results))

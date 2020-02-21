@@ -10,7 +10,18 @@ config = gameconfig(-1,1,0)
 
 
 class BTBoard(GameNode):
+    """
+        BTBoard is the game class for a game of breakthrough
+
+        Member variables:
+            board:   np.array - represents the current game of breakthrough
+            row:     int      - the height of the game board
+            cols:    int      - the width of the game board
+            player:  int      - 1: white player playing -1: black player playing
+            terminal:bool     - true if current state is a terminal state
+    """
     def __init__(self, board_list, player):
+        super(BTBoard, self).__init__()
         self.board = board_list
         self.rows = len(board_list)
         self.cols = len(board_list[0])
@@ -19,6 +30,12 @@ class BTBoard(GameNode):
 
 
     def legal_moves(self) -> list:
+        """
+        Legal_moves()
+            - returns a list of legal moves for the BTBoard
+                list contains tuples with (x1, y1, x2, y2) representing
+                moving piece at col x1 row y2 to col x2 row y2
+        """
         d = self.player
         moves = []
         for y in range(self.rows):
@@ -38,6 +55,11 @@ class BTBoard(GameNode):
         return moves
 
     def execute_move(self,move):
+        """
+        Execute_move(move)
+            - Returns a new BTBoard representing the gamestate
+              after applying move to the (self) BTBoard
+        """
         new_board = np.copy(self.board)
         y1,x1,y2,x2 = move
         new_board[y2,x2] = new_board[y1,x1]
@@ -48,6 +70,11 @@ class BTBoard(GameNode):
         return self.terminal
 
     def reward(self) -> int:
+        """
+        reward()
+            - returns 1 if white wins, -1 if black wins, and 0 on a draw
+        """
+        assert self.is_terminal()
         if any(x == config.BLACK for x in self.board[-1,:]):
             return -1
         if any(x == config.WHITE for x in self.board[0,:]):
@@ -55,13 +82,26 @@ class BTBoard(GameNode):
         return 0
 
     def is_terminal_helper(self) -> bool:
-        # print("calling is terminal helper on \n",self.board)
-        # print("black on edge,",any(x == config.BLACK for x in self.board[-1]))
-        # print("black on edge,",any(x == config.WHITE for x in self.board[0]))
-        # print("legal moves,",self.legal_moves())
         return any(x == config.BLACK for x in self.board[-1,:]) \
                 or any(x == config.WHITE for x in self.board[0,:]) \
                 or len(self.legal_moves()) == 0
+
+    def encode_state(self) -> np.ndarray:
+        """
+        encode_state()
+            - Returns an encoded version of the BTBoard, this encoded
+              version will be run through NeuralNetworks
+        """
+        enc_board = np.zeros([self.rows, self.cols,3])
+        for y in range(self.rows):
+            for x in range(self.cols):
+                if self.board[y,x] == config.WHITE:
+                    enc_board[y,x,0] = True
+                elif self.board[y,x] == config.BLACK:
+                    enc_board[y,x,1] = True
+        if self.player == config.WHITE:
+            enc_board[:,:,2] = 1
+        return enc_board
 
     def print_board(self):
         print("BOARD STATE")
@@ -76,6 +116,9 @@ class BTBoard(GameNode):
         print("------------------")
         print("legal moves:",self.legal_moves())
         print("==================")
+
+    def get_move_amount(self):
+        return self.rows * self.cols * 6 # representing all directions we can move
 
     def __copy__(self):
         return np.copy(self.board)
