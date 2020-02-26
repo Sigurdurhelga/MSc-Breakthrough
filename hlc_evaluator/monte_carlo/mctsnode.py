@@ -26,3 +26,6 @@ class Node():
   def __hash__(self) -> int:
     return hash(self.gamestate)+hash(self.action)
 
+  def __eq__(self, other) -> bool:
+    return str(self.gamestate) == str(other.gamestate)
+

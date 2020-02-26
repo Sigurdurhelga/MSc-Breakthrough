@@ -9,37 +9,13 @@ from tqdm import tqdm
 import json
 from datetime import time
 
-game_setup = namedtuple("gamesetup", "game_class initial_state")
-
-BREAKTHROUGH_INITIAL_STATE = (np.array([
-                  [BTconfig.BLACK,BTconfig.BLACK,BTconfig.BLACK,BTconfig.BLACK],
-                  [BTconfig.BLACK,BTconfig.BLACK,BTconfig.BLACK,BTconfig.BLACK],
-                  [BTconfig.EMPTY,BTconfig.EMPTY,BTconfig.EMPTY,BTconfig.EMPTY],
-                  [BTconfig.EMPTY,BTconfig.EMPTY,BTconfig.EMPTY,BTconfig.EMPTY],
-                  [BTconfig.EMPTY,BTconfig.EMPTY,BTconfig.EMPTY,BTconfig.EMPTY],
-                  [BTconfig.EMPTY,BTconfig.EMPTY,BTconfig.EMPTY,BTconfig.EMPTY],
-                  [BTconfig.WHITE,BTconfig.WHITE,BTconfig.WHITE,BTconfig.WHITE],
-                  [BTconfig.WHITE,BTconfig.WHITE,BTconfig.WHITE,BTconfig.WHITE]]), BTconfig.WHITE)
-
-BREAKTHROUGH_INITIAL_STATE = (np.array([
-                  [BTconfig.BLACK,BTconfig.BLACK,BTconfig.BLACK],
-                  [BTconfig.BLACK,BTconfig.BLACK,BTconfig.BLACK],
-                  [BTconfig.EMPTY,BTconfig.EMPTY,BTconfig.EMPTY],
-                  [BTconfig.EMPTY,BTconfig.EMPTY,BTconfig.EMPTY],
-                  [BTconfig.EMPTY,BTconfig.EMPTY,BTconfig.EMPTY],
-                  [BTconfig.WHITE,BTconfig.WHITE,BTconfig.WHITE],
-                  [BTconfig.WHITE,BTconfig.WHITE,BTconfig.WHITE]]), BTconfig.WHITE)
-
-
-CHESS_INITIAL_STATE = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 GAME = {
-    "breakthrough": game_setup(BTBoard, BREAKTHROUGH_INITIAL_STATE),
-    "chess": game_setup(PlayChess, CHESS_INITIAL_STATE),
+    "breakthrough": BTBoard(np.zeros([7,6]), 1),
 }
 
 selected_game = GAME["breakthrough"]
-initial_state = Node(selected_game.game_class(*selected_game.initial_state), "START")
+initial_state = selected_game.initial_state()
 
 
 whiteplayer = None
@@ -55,7 +31,7 @@ def play_game(white_think, black_think, verbose=False):
     """
     # print("playgame started with {} {}".format(white_think, black_think))
     # initial node (root)
-    curr_node = Node(selected_game.game_class(*selected_game.initial_state), "START")
+    curr_node = Node(selected_game.initial_state(), "START")
     if whiteplayer:
         whiteplayer.set_node(curr_node)
         blackplayer.set_node(curr_node)
@@ -80,7 +56,7 @@ def play_game(white_think, black_think, verbose=False):
             break
 
         if not blackplayer:
-            blackplayer = MCTS(Node(whiteplayer.root.gamestate, whiteplayer.root.action), negamaxing=True)
+            blackplayer = MCTS(Node(whiteplayer.root.gamestate, whiteplayer.root.action))
         else:
             blackplayer.move_to_child(whiteplayer.root.action)
 
@@ -134,5 +110,5 @@ for i in tqdm(range(1,10)):
         else:
             results["black"] += 1
     total_results[f"2.{i}"] = results
-with open("results5.json", "w") as f:
+with open("res.json", "w") as f:
     f.write(json.dumps(total_results))

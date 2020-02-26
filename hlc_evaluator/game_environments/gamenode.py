@@ -32,6 +32,10 @@ class GameNode(ABC):
     pass
 
   @abstractmethod
+  def initial_state(self) -> GameNode:
+    pass
+
+  @abstractmethod
   def __copy__(self):
     pass
 
