@@ -29,11 +29,11 @@ class Node():
   def action_idx_to_policy_idx(self) -> int:
     if self.action == "START":
       return
-    x1,y1,x2,y2 = self.action
+    y1,x1,y2,x2 = self.action
     direction = 0 if y1 < y2 else 3
     direction += 0 if x1 < x2 else 1 if x1 == x2 else 2
-    # the 6 here is breakthrough specific make a method
-    return x2 + ( self.gamestate.cols * ( y2 + ( 6 * direction ) ) )
+    # the 6 here is breakthrough specific make a method (width * height * z) + (width * y) + x
+    return (self.gamestate.rows * self.gamestate.cols * direction) + (self.gamestate.cols * y2) + x2
 
   def is_expanded(self) -> bool:
     return self.expanded

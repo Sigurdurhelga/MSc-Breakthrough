@@ -50,7 +50,7 @@ class BreakthroughNN(NNBase):
       for batch_idx in range(batch_amount):
         for example in dataset[batch_size*batch_idx : batch_size * (batch_idx + 1)]:
           xboard, xpolicy, xvalue = example
-          xboard = torch.FloatTensor(xboard.transpost(2,0,1))
+          xboard = torch.FloatTensor(xboard.transpose(2,0,1))
           xpolicy = torch.FloatTensor(np.array(xpolicy))
           xvalue = torch.FloatTensor(np.array(xvalue).astype(np.float64))
           if config.cuda:
@@ -58,11 +58,11 @@ class BreakthroughNN(NNBase):
             xpolicy = xpolicy.cuda()
             xvalue = xvalue.cuda()
 
-          ypolicy, yvalue = self.neural_network.predict(xboard)
+          ypolicy, yvalue = self.neural_network(xboard)
           loss = criterion(yvalue, xvalue, ypolicy, xpolicy)
 
           loss /= config.grad_steps
-          loss.backwards()
+          loss.backward()
 
           clip_grad_norm_(self.neural_network.parameters(), 1)
 

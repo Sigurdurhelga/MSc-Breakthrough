@@ -20,15 +20,15 @@ from tqdm import tqdm
 
 
 GAME = {
-    "breakthrough": BTBoard(np.zeros([7,6]), 1),
+    "breakthrough": BTBoard(np.zeros([5,4]), 1),
 }
 
 selected_game = GAME["breakthrough"]
 initial_state = selected_game.initial_state()
 
-EPISODE_AMOUNT = 2
+EPISODE_AMOUNT = 1
 
-NEURAL_NETWORK_THINK = 10
+NEURAL_NETWORK_THINK = 2
 
 TEMP_THRESHOLD = 10
 
@@ -64,7 +64,7 @@ def generate_dataset(primary_nn: BreakthroughNN, initial_state : GameNode, verbo
       # NNpolicy based select select best
       temp = 1 if action_depth < TEMP_THRESHOLD else 0
       pi = monte_tree.get_policy(temp)
-      datapoint = [curr_node, pi, 0]
+      datapoint = [curr_node.gamestate.encode_state(), pi, 0]
       episode_data.append(datapoint)
       nnpi,_ = primary_nn.predict(curr_node.gamestate)
       best_child = np.random.choice(curr_node.children, p=pi)
@@ -73,7 +73,7 @@ def generate_dataset(primary_nn: BreakthroughNN, initial_state : GameNode, verbo
       action_depth += 1
 
     reward = curr_node.gamestate.reward()
-    episode_data.append([curr_node, monte_tree.get_policy(),0])
+    episode_data.append([curr_node.gamestate.encode_state(), monte_tree.get_policy(),0])
     results[reward] += 1
 
     for i in range(len(episode_data)-1):
@@ -83,8 +83,6 @@ def generate_dataset(primary_nn: BreakthroughNN, initial_state : GameNode, verbo
   return dataset
 
 first_nn = BreakthroughNN(initial_state.cols, initial_state.rows, initial_state.get_move_amount())
-first_ds = generate_dataset(first_nn, initial_state,True)
-
-first_nn.train(first_ds)
-
-print(generate_dataset)
+for i in range(1):
+  first_ds = generate_dataset(first_nn, initial_state,True)
+  first_nn.train(first_ds)

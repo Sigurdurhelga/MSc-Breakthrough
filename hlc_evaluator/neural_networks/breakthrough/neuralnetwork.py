@@ -13,7 +13,7 @@ class ConvBlock(nn.Module):
     self.relu1      = nn.ReLU()
 
   def forward(self,in_val):
-    in_val = in_val.view(-1,3,self.game_height,self.game_width)
+    in_val = in_val.view(-1,3,self.game_width,self.game_height)
     output = self.conv1(in_val)
     output = self.batchnorm1(output)
     return self.relu1(output)
