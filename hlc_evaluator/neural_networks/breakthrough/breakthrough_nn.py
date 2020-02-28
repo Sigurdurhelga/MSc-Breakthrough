@@ -88,10 +88,11 @@ class BreakthroughNN(NNBase):
   def loadmodel(self, path, filename):
     filepath = os.path.join(path,filename)
     if not os.path.exists(filepath):
-      raise FileNotFoundError("Model file to load didn't exist")
+      self.savemodel(path, filename)
+      return
     map_location = None if torch.cuda.is_available() else "cpu"
     checkpoint = torch.load(filepath, map_location=map_location)
     self.neural_network.load_state_dict(checkpoint["model_state_dict"])
     self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-    self.scheduler.load_state_dict(checkpoint["scheduledr_state_dict"])
+    self.scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
 
