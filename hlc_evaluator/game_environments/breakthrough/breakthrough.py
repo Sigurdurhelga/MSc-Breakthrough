@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 from copy import deepcopy, copy
 import random
@@ -85,6 +87,12 @@ class BTBoard(GameNode):
         return any(x == config.BLACK for x in self.board[-1,:]) \
                 or any(x == config.WHITE for x in self.board[0,:]) \
                 or len(self.legal_moves()) == 0
+
+    def initial_state(self) -> BTBoard:
+        new_board = np.zeros([self.rows, self.cols]).astype(int)
+        new_board[:2,:] = config.BLACK
+        new_board[-2:,:] = config.WHITE
+        return BTBoard(new_board, config.WHITE)
 
     def encode_state(self) -> np.ndarray:
         """
