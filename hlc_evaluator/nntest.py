@@ -17,6 +17,9 @@ a1 = np.array([
 
 b1 = BTBoard(a1, config.WHITE)
 net = BreakthroughNN(b1.rows, b1.cols, b1.get_move_amount())
+net.neural_network.cuda()
+print(net.neural_network)
+
 for i in range(100):
   start = timeit()
   p,v = net.predict(b1)

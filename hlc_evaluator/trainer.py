@@ -10,7 +10,7 @@
 
 from monte_carlo.mcts import MCTS
 from monte_carlo.mctsnode import Node
-from game_environments.play_chess.playchess import PlayChess
+# from game_environments.play_chess.playchess import PlayChess
 from game_environments.gamenode import GameNode
 from game_environments.breakthrough.breakthrough import BTBoard, config as BTconfig
 from neural_networks.breakthrough.breakthrough_nn import BreakthroughNN
@@ -30,8 +30,8 @@ initial_state = selected_game.initial_state()
 """
   Config varibles
 """
-EPISODE_AMOUNT = 4
-NEURAL_NETWORK_THINK = 3
+EPISODE_AMOUNT = 10
+NEURAL_NETWORK_THINK = 25
 TEMP_THRESHOLD = 15
 
 def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_monte_tree=None, verbose=False):
@@ -52,11 +52,6 @@ def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_
     action_depth = 0
     episode_data = []
     while True:
-      if verbose:
-        print("=====================")
-        print("ACTION DEPTH:",action_depth)
-        curr_node.gamestate.print_board()
-        print("=====================")
       if curr_node.gamestate.is_terminal():
         break
 
@@ -96,6 +91,12 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
   neural_network_1.loadmodel(first_network_path, first_network_name)
   neural_network_2.loadmodel(second_network_path, second_network_name)
 
+  # for layer in neural_network_1.neural_network.residualBlocks:
+  #   layer.cuda()
+
+  # for layer in neural_network_2.neural_network.residualBlocks:
+  #   layer.cuda()
+
   initial_node = Node(state_example.initial_state(), "START")
   while True:
 
@@ -103,11 +104,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
     second_win = 0
 
     for _ in tqdm(range(10)):
-      print("==========================")
-      print("setting game to initial")
       curr_node = initial_node
-      curr_node.gamestate.print_board()
-      print("==========================")
       while True:
         # First NN moves
         pi,_ = neural_network_1.predict(curr_node.gamestate)
@@ -118,7 +115,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
         action_idxs = [child.get_pidx() for child in curr_node.children if child]
         mask_idxs = [i for i in range(len(pi)) if i not in action_idxs]
         pi[mask_idxs] = 0
-        curr_node.gamestate.print_board()
+        # curr_node.gamestate.print_board()
 
         total = sum(pi)
         if total == 0:
@@ -143,7 +140,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
         mask_idxs = [i for i in range(len(pi)) if i not in action_idxs]
         pi[mask_idxs] = 0
 
-        curr_node.gamestate.print_board()
+        # curr_node.gamestate.print_board()
 
         total = sum(pi)
         if total == 0:
@@ -157,17 +154,23 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
             second_win += 1
           break
 
+    print("ENDGAME")
+    curr_node.gamestate.print_board()
+    print("=============")
     if first_win > second_win:
       neural_network_2.loadmodel(first_network_path, first_network_name)
       neural_network_1.savemodel("./trained_models", "best_network.tar")
     elif second_win > first_win:
-      neural_network_1.loadmodel(second_network_name, second_network_path)
+      neural_network_1.loadmodel(second_network_path, second_network_name)
       neural_network_1.savemodel("./trained_models", "best_network.tar")
 
-    train_model(1, neural_network_1, state_example)
+    neural_network_1.savemodel(first_network_path,first_network_name)
+    neural_network_2.savemodel(second_network_path,second_network_name)
 
-network_path = "./trained_networks"
-selfplay(network_path,"test1.tar", network_path, "test2.tar",initial_state)
+    train_model(10, neural_network_1, state_example)
+
+network_path = "./trained_models"
+selfplay(network_path,"working1.tar", network_path, "working2.tar",initial_state)
 
 
 

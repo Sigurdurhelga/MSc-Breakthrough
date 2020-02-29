@@ -118,10 +118,10 @@ class MCTS():
         value = value.item()
         self.backpropagate(value, path)
 
+        if curr_node.gamestate.is_terminal():
+          break
         if not curr_node.is_expanded():
           curr_node.expand()
-          break
-        if curr_node.gamestate.is_terminal():
           break
 
         children = curr_node.children
