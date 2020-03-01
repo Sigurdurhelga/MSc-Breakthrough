@@ -107,7 +107,7 @@ class OutBlock(nn.Module):
 
     policy = policy.view(-1, self.game_height*self.game_width*32)
     policy = self.full_conn_p(policy)
-    policy = self.logsoftmax(policy).exp()
+    policy = self.softmax(policy)
 
     return policy, value
 
@@ -133,8 +133,8 @@ class AlphaLoss(nn.Module):
   def __init__(self):
     super(AlphaLoss, self).__init__()
 
-  def forward(self, y_value, value, y_policy, policy):
-    value_error = (value - y_value) ** 2 # squared error
-    policy_error = torch.sum((-policy * (1e-8 + y_policy.float()).float().log()))
+  def forward(self, y_value, x_value, y_policy, x_policy):
+    value_error = (x_value - y_value) ** 2 # squared error
+    policy_error = torch.sum((-x_policy * (1e-8 + y_policy.float()).float().log()), 1)
     total_error = (value_error.view(-1).float() + policy_error).mean()
     return total_error

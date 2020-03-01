@@ -113,7 +113,7 @@ class MCTS():
         path.append(curr_node)
         self.Ns[curr_node] += 1
 
-        policy, value = self.neural_network.predict(curr_node.gamestate)
+        policy, value = self.neural_network.safe_predict(curr_node.gamestate)
         policy = policy.detach().cpu().numpy().reshape(-1)
         value = value.item()
         self.backpropagate(value, path)

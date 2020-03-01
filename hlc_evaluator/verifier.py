@@ -29,7 +29,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
   while True:
 
 
-    for _ in tqdm(range(100)):
+    for _ in tqdm(range(1000)):
     #   print("==========================")
     #   print("setting game to initial")
       curr_node = initial_node
@@ -37,7 +37,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
     #   print("==========================")
       while True:
         # First NN moves
-        pi,_ = neural_network_1.predict(curr_node.gamestate)
+        pi,_ = neural_network_1.safe_predict(curr_node.gamestate)
         pi = pi.detach().cpu().numpy().reshape(-1)
         if not curr_node.is_expanded():
           curr_node.expand()
@@ -62,7 +62,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
           break
 
         # Second NN moves (is playing black)
-        pi,_ = neural_network_2.predict(curr_node.gamestate)
+        pi,_ = neural_network_2.safe_predict(curr_node.gamestate)
         pi = pi.detach().cpu().numpy().reshape(-1)
         if not curr_node.is_expanded():
           curr_node.expand()
@@ -90,4 +90,4 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
     print("Bestnetwork {} random {} ZERO ACTION SUM {}".format(first_win, second_win, zero_action_sum))
 
 network_path = "./trained_models"
-selfplay(network_path,"best_network.tar", network_path, "test24.tar",initial_state)
+selfplay(network_path,"test1.tar", network_path, "test24.tar",initial_state)

@@ -14,14 +14,14 @@ config_neuralnet = namedtuple("nnconfig", "lr epochs batch_size conv_filters cud
 
 config = config_neuralnet(0.01,
                           5,
-                          512,
+                          128,
                           128,
                           torch.cuda.is_available(),
                           10)
 
 class BoardData(Dataset):
   def __init__(self, dataset):
-    super(BoardData, self).__init__()
+    # super(BoardData, self).__init__()
     self.X = dataset
 
   def __len__(self):
@@ -29,15 +29,9 @@ class BoardData(Dataset):
 
   def __getitem__(self, idx):
     xboard, xpolicy, xvalue = self.X[idx]
-
     xboard = torch.FloatTensor(xboard.transpose(2,0,1))
     xpolicy = torch.FloatTensor(np.array(xpolicy))
     xvalue = torch.FloatTensor(np.array(xvalue).astype(np.float64))
-
-    if config.cuda:
-      xboard.cuda()
-      xpolicy.cuda()
-      xvalue.cuda()
 
     return xboard,xpolicy,xvalue
 
@@ -60,35 +54,50 @@ class BreakthroughNN(NNBase):
       example = example.cuda()
     return self.neural_network(example)
 
+  def safe_predict(self, example):
+    if type(example) != np.ndarray:
+      example = example.encode_state()
+    example = torch.FloatTensor(example.transpose(2,0,1))
+    if config.cuda:
+      example = example.cuda()
+    output = None
+    with torch.no_grad():
+      output = self.neural_network(example) 
+    return output
+
   def train(self, dataset):
     criterion = AlphaLoss()
     dataset = BoardData(dataset)
     train_data = DataLoader(dataset, batch_size=config.batch_size, shuffle=True, pin_memory=False)
-
 
     for epoch in range(config.epochs):
       total_loss = 0
       for batch in train_data:
         xboard, xpolicy, xvalue = batch
 
+        if config.cuda:
+          xboard = xboard.cuda()
+          xpolicy =xpolicy.cuda()
+          xvalue = xvalue.cuda()
+
+
         ypolicy, yvalue = self.neural_network(xboard)
-        loss = criterion(yvalue, xvalue, ypolicy, xpolicy)
         if config.cuda:
           ypolicy = ypolicy.cuda()
           yvalue = yvalue.cuda()
-          loss = loss.cuda()
+        loss = criterion(yvalue, xvalue, ypolicy, xpolicy)
 
-        loss /= config.grad_steps
         loss.backward()
         clip_grad_norm_(self.neural_network.parameters(), 1)
 
-        if epoch % config.grad_steps == 0:
-          self.optimizer.step()
-          self.optimizer.zero_grad()
+        self.optimizer.step()
+        self.optimizer.zero_grad()
 
         total_loss += loss.item()
 
-      # self.scheduler.step()
+      self.scheduler.step()
+      print("[training] total epoch loss {}".format(total_loss))
+
 
   def savemodel(self, path, filename):
     filepath = os.path.join(path,filename)

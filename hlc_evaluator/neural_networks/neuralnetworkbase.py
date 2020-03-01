@@ -17,6 +17,14 @@ class NNBase(ABC):
     pass
 
   @abstractmethod
+  def safe_predict(self, example):
+    """
+      Given an example return P,v (policy and value) for the example (boardstate) 
+      Safe means it wraps prediction in torch nograd so we have no sideeffects
+    """
+    pass
+
+  @abstractmethod
   def train(self, dataset):
     """
       Takes a dataset of (boardstate, policy, value) and trains the neural network

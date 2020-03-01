@@ -30,8 +30,8 @@ initial_state = selected_game.initial_state()
 """
   Config varibles
 """
-EPISODE_AMOUNT = 10
-NEURAL_NETWORK_THINK = 25
+EPISODE_AMOUNT = 5
+NEURAL_NETWORK_THINK = 50
 TEMP_THRESHOLD = 15
 
 def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_monte_tree=None, verbose=False):
@@ -74,6 +74,7 @@ def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_
     for i in range(len(episode_data)-1):
       episode_data[i+1][2] = reward
     dataset.extend(episode_data)
+
   return dataset
 
 def train_model(play_iterations, neural_network: BreakthroughNN, state_example: GameNode):
@@ -91,23 +92,20 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
   neural_network_1.loadmodel(first_network_path, first_network_name)
   neural_network_2.loadmodel(second_network_path, second_network_name)
 
-  # for layer in neural_network_1.neural_network.residualBlocks:
-  #   layer.cuda()
-
-  # for layer in neural_network_2.neural_network.residualBlocks:
-  #   layer.cuda()
-
   initial_node = Node(state_example.initial_state(), "START")
+
+  generation = 1
+
   while True:
 
     first_win = 0
     second_win = 0
 
-    for _ in tqdm(range(10)):
+    for _ in tqdm(range(100)):
       curr_node = initial_node
       while True:
         # First NN moves
-        pi,_ = neural_network_1.predict(curr_node.gamestate)
+        pi,_ = neural_network_1.safe_predict(curr_node.gamestate)
         pi = pi.detach().cpu().numpy().reshape(-1)
         if not curr_node.is_expanded():
           curr_node.expand()
@@ -131,7 +129,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
           break
 
         # Second NN moves (is playing black)
-        pi,_ = neural_network_2.predict(curr_node.gamestate)
+        pi,_ = neural_network_2.safe_predict(curr_node.gamestate)
         pi = pi.detach().cpu().numpy().reshape(-1)
         if not curr_node.is_expanded():
           curr_node.expand()
@@ -153,21 +151,23 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
           if curr_node.gamestate.reward() == -1:
             second_win += 1
           break
-
-    print("ENDGAME")
-    curr_node.gamestate.print_board()
-    print("=============")
+    print("[trainer.py] Episode record was White: {} | Black: {} | Tie: {}".format(first_win, second_win, 10 - (first_win+second_win)))
     if first_win > second_win:
+      print("[trainer.py] First network better than second network, saving first")
       neural_network_2.loadmodel(first_network_path, first_network_name)
       neural_network_1.savemodel("./trained_models", "best_network.tar")
     elif second_win > first_win:
+      print("[trainer.py] Second network better than first network, saving second")
       neural_network_1.loadmodel(second_network_path, second_network_name)
       neural_network_1.savemodel("./trained_models", "best_network.tar")
 
     neural_network_1.savemodel(first_network_path,first_network_name)
     neural_network_2.savemodel(second_network_path,second_network_name)
-
+    print("[trainer.py] STARTING TRAINING")
     train_model(10, neural_network_1, state_example)
+    print("[trainer.py] DONE TRAINING")
+    print("[trainer.py] GENERATION {}".format(generation))
+    generation += 1
 
 network_path = "./trained_models"
 selfplay(network_path,"working1.tar", network_path, "working2.tar",initial_state)
