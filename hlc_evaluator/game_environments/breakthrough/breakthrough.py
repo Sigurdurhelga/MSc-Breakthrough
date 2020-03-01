@@ -119,9 +119,11 @@ class BTBoard(GameNode):
             print("Winner:", "black" if any(x == config.BLACK for x in self.board[-1,:]) else "white" if any(x == config.WHITE for x in self.board[0,:]) else "tie")
         else:
             print()
-        for row in self.board:
-            print("".join(["w" if c == config.WHITE else "b" if c == config.BLACK else "·" for c in row]))
-        print("------------------")
+        print("-"*(self.cols + 4 + self.cols - 1))
+        for idx,row in enumerate(self.board):
+            print(str(idx)+" "+" ".join(["w" if c == config.WHITE else "b" if c == config.BLACK else "·" for c in row]))
+        print("  "+" ".join([str(x) for x in list(range(self.cols))]))
+        print("-"*(self.cols + 4 + self.cols - 1))
         print("legal moves:",self.legal_moves())
         print("==================")
 
