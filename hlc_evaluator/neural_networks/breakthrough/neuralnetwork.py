@@ -87,7 +87,7 @@ class OutBlock(nn.Module):
     )
     self.batchnorm_p = nn.BatchNorm2d(32)
     self.relu_p_1 = nn.ReLU()
-    self.logsoftmax = nn.LogSoftmax(dim=1)
+    self.log_softmax = nn.LogSoftmax(dim=1)
     # Last policy head has out_features = total amount of possible moves in game
     self.full_conn_p = nn.Linear(in_features=(self.game_height * self.game_width * 32), out_features=game_move_amount)
 
@@ -107,7 +107,7 @@ class OutBlock(nn.Module):
 
     policy = policy.view(-1, self.game_height*self.game_width*32)
     policy = self.full_conn_p(policy)
-    policy = self.softmax(policy)
+    policy = self.log_softmax(policy)
 
     return policy, value
 
@@ -135,6 +135,6 @@ class AlphaLoss(nn.Module):
 
   def forward(self, y_value, x_value, y_policy, x_policy):
     value_error = (x_value - y_value) ** 2 # squared error
-    policy_error = torch.sum((-x_policy * (1e-8 + y_policy.float()).float().log()), 1)
-    total_error = (value_error.view(-1).float() + policy_error).mean()
+    policy_error = -torch.sum(x_policy * y_policy)/y_policy.size()[0]
+    total_error = (value_error.view(-1) + policy_error).mean()
     return total_error

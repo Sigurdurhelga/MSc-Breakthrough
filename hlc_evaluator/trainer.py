@@ -30,9 +30,10 @@ initial_state = selected_game.initial_state()
 """
   Config varibles
 """
-EPISODE_AMOUNT = 5
+EPISODE_AMOUNT = 2
 NEURAL_NETWORK_THINK = 50
-TEMP_THRESHOLD = 15
+TEMP_THRESHOLD = 6
+TRAINING_ITERS = 3
 
 def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_monte_tree=None, verbose=False):
   global NEURAL_NETWORK_THINK
@@ -74,11 +75,12 @@ def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_
     for i in range(len(episode_data)-1):
       episode_data[i+1][2] = reward
     dataset.extend(episode_data)
+  print("[TRAINING] datapoints gathered amount: {}".format(len(dataset)))
 
   return dataset
 
 def train_model(play_iterations, neural_network: BreakthroughNN, state_example: GameNode):
-  for _ in range(play_iterations):
+  for _ in tqdm(range(play_iterations)):
     dataset = generate_dataset(neural_network, state_example)
     neural_network.train(dataset)
 
@@ -164,7 +166,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
     neural_network_1.savemodel(first_network_path,first_network_name)
     neural_network_2.savemodel(second_network_path,second_network_name)
     print("[trainer.py] STARTING TRAINING")
-    train_model(10, neural_network_1, state_example)
+    train_model(TRAINING_ITERS, neural_network_1, state_example)
     print("[trainer.py] DONE TRAINING")
     print("[trainer.py] GENERATION {}".format(generation))
     generation += 1
