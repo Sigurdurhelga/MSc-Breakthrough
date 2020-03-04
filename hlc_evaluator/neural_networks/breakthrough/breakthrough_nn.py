@@ -62,14 +62,14 @@ class BreakthroughNN(NNBase):
       example = example.cuda()
     output = None
     with torch.no_grad():
-      output = self.neural_network(example) 
+      output = self.neural_network(example)
     return output
 
   def train(self, dataset):
     criterion = AlphaLoss()
     dataset = BoardData(dataset)
     train_data = DataLoader(dataset, batch_size=config.batch_size, shuffle=True, pin_memory=False)
-
+    losses = []
     for epoch in range(config.epochs):
       total_loss = 0
       for batch in train_data:
@@ -86,6 +86,8 @@ class BreakthroughNN(NNBase):
           ypolicy = ypolicy.cuda()
           yvalue = yvalue.cuda()
         loss = criterion(yvalue, xvalue, ypolicy, xpolicy)
+        if config.cuda:
+          loss.cuda()
 
         loss.backward()
         clip_grad_norm_(self.neural_network.parameters(), 1)
@@ -96,8 +98,8 @@ class BreakthroughNN(NNBase):
         total_loss += loss.item()
 
       self.scheduler.step()
-      print("[training] total epoch loss {}".format(total_loss))
-
+      losses.append(total_loss)
+    print(f"[breakthrough_nn.py train()] total losses for training were {losses}")
 
   def savemodel(self, path, filename):
     filepath = os.path.join(path,filename)

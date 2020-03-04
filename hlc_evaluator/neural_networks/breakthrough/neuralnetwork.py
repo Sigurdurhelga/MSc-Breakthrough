@@ -134,7 +134,7 @@ class AlphaLoss(nn.Module):
     super(AlphaLoss, self).__init__()
 
   def forward(self, y_value, x_value, y_policy, x_policy):
-    value_error = (x_value - y_value) ** 2 # squared error
+    value_error = (x_value - y_value.view(-1)) ** 2 # squared error
     policy_error = -torch.sum(x_policy * y_policy)/y_policy.size()[0]
     total_error = (value_error.view(-1) + policy_error).mean()
     return total_error

@@ -19,7 +19,7 @@ class MCTS():
     self.root = root_node
     self.initial_root = root_node
     self.Qs = defaultdict(float)
-    self.Ps = defaultdict(float)
+    self.Ps = defaultdict(tuple)
     self.Ns = defaultdict(int)
     self.temp = 1
     self.neural_network = neural_network
@@ -112,8 +112,12 @@ class MCTS():
       while True:
         path.append(curr_node)
         self.Ns[curr_node] += 1
+        if curr_node in self.Ps:
+          policy,value = self.Ps[curr_node]
+        else:
+          policy, value = self.neural_network.safe_predict(curr_node.gamestate)
+          self.Ps[curr_node] = (policy,value)
 
-        policy, value = self.neural_network.safe_predict(curr_node.gamestate)
         policy = policy.detach().cpu().numpy().reshape(-1)
         value = value.item()
         self.backpropagate(value, path)
@@ -126,7 +130,7 @@ class MCTS():
 
         children = curr_node.children
 
-        action_idxs = [child.get_pidx() for child in children if child]
+        action_idxs = set([child.get_pidx() for child in children if child])
 
         mask_idxs = [i for i in range(len(policy)) if i not in action_idxs]
         policy[mask_idxs] = 0
@@ -136,17 +140,20 @@ class MCTS():
         # Q = W / N
         # U = temp * P(Action) * (sum(N_ALLactions) / N_action)
         all_action_sum = 0
-        node_qu = []
+
+        best_qu = -float("inf")
+        best_child = 0
+
         all_action_sum = sum(self.Qs[child]/(self.Ns[child]+1) for child in children)
         for child in children:
           if not child:
-            node_qu.append(-float("inf"))
             continue
           child_q = self.Qs[child] / (self.Ns[child]+1)
-          child_u = self.temp * policy[child.get_pidx()] * (all_action_sum / (self.Ns[child]+1))
-          node_qu.append(child_q + child_u)
+          child_u = self.temp * policy[child.get_pidx()] * all_action_sum
+          if child_q + child_u > best_qu:
+            best_qu = child_q + child_u
+            best_child = child.get_pidx()
 
-        best_child = children[np.argmax(node_qu)].get_pidx()
         curr_node = children[best_child]
 
   def get_policy(self, temp=1):
