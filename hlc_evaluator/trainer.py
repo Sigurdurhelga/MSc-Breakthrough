@@ -30,58 +30,50 @@ initial_state = selected_game.initial_state()
 """
   Config varibles
 """
-EPISODE_AMOUNT = 2
-NEURAL_NETWORK_THINK = 50
+EPISODE_AMOUNT = 5
+NEURAL_NETWORK_THINK = 25
 TEMP_THRESHOLD = 6
-TRAINING_ITERS = 3
+TRAINING_ITERS = 4
+VERIFICATION_GAMES = 100
 
 def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_monte_tree=None, verbose=False):
-  global NEURAL_NETWORK_THINK
-
   initial_node = Node(game_example.initial_state(), "START")
-
-  if not saved_monte_tree:
-    monte_tree = MCTS(initial_node, primary_nn)
-  else:
-    monte_tree = saved_monte_tree
-
+  monte_tree = MCTS(initial_node, primary_nn)
   dataset = []
 
-  for _ in tqdm(range(EPISODE_AMOUNT)):
-    monte_tree.set_node(monte_tree.initial_root)
+  monte_tree.set_node(monte_tree.initial_root)
+  curr_node = monte_tree.root
+  action_depth = 0
+  while True:
+    if curr_node.gamestate.is_terminal():
+      break
+
+    # selection / expantion / rollout
+    monte_tree.nn_rollout(NEURAL_NETWORK_THINK)
+
+    # NNpolicy based select select best
+    temp = 1 if action_depth < TEMP_THRESHOLD else 0
+    pi = monte_tree.get_policy(temp)
+    datapoint = [curr_node.gamestate.encode_state(), pi, 0]
+    dataset.append(datapoint)
+    best_child = np.random.choice(curr_node.children, p=pi)
+    monte_tree.move_to_child(best_child.action)
     curr_node = monte_tree.root
-    action_depth = 0
-    episode_data = []
-    while True:
-      if curr_node.gamestate.is_terminal():
-        break
+    action_depth += 1
 
-      # selection / expantion / rollout
-      monte_tree.nn_rollout(NEURAL_NETWORK_THINK)
+  reward = curr_node.gamestate.reward()
+  dataset.append([curr_node.gamestate.encode_state(), monte_tree.get_policy(),0])
 
-      # NNpolicy based select select best
-      temp = 1 if action_depth < TEMP_THRESHOLD else 0
-      pi = monte_tree.get_policy(temp)
-      datapoint = [curr_node.gamestate.encode_state(), pi, 0]
-      episode_data.append(datapoint)
-      best_child = np.random.choice(curr_node.children, p=pi)
-      monte_tree.move_to_child(best_child.action)
-      curr_node = monte_tree.root
-      action_depth += 1
-
-    reward = curr_node.gamestate.reward()
-    episode_data.append([curr_node.gamestate.encode_state(), monte_tree.get_policy(),0])
-
-    for i in range(len(episode_data)-1):
-      episode_data[i+1][2] = reward
-    dataset.extend(episode_data)
-  print("[TRAINING] datapoints gathered amount: {}".format(len(dataset)))
+  for i in range(len(dataset)-1):
+    dataset[i+1][2] = reward
+  # print("[TRAINING] datapoints gathered amount: {}".format(len(dataset)))
 
   return dataset
 
 def train_model(play_iterations, neural_network: BreakthroughNN, state_example: GameNode):
   for _ in tqdm(range(play_iterations)):
     dataset = generate_dataset(neural_network, state_example)
+    print("Dataset to train on has reward:",dataset[-1][2])
     neural_network.train(dataset)
 
 
@@ -96,18 +88,29 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
 
   initial_node = Node(state_example.initial_state(), "START")
 
+  memo_nn1 = {}
+  memo_nn2 = {}
+
   generation = 1
 
   while True:
+    memo_nn1.clear()
+    memo_nn2.clear()
 
     first_win = 0
     second_win = 0
+    print("[trainer.py] STARTING VERIFICATION OF NN's")
 
-    for _ in tqdm(range(100)):
+    for _ in tqdm(range(VERIFICATION_GAMES)):
       curr_node = initial_node
       while True:
         # First NN moves
-        pi,_ = neural_network_1.safe_predict(curr_node.gamestate)
+        if curr_node in memo_nn1:
+          pi,val = memo_nn1[curr_node]
+        else:
+          pi,val = neural_network_1.safe_predict(curr_node.gamestate)
+          memo_nn1[curr_node] = (pi,val)
+
         pi = pi.detach().cpu().numpy().reshape(-1)
         if not curr_node.is_expanded():
           curr_node.expand()
@@ -115,8 +118,8 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
         action_idxs = [child.get_pidx() for child in curr_node.children if child]
         mask_idxs = [i for i in range(len(pi)) if i not in action_idxs]
         pi[mask_idxs] = 0
-        # curr_node.gamestate.print_board()
 
+        # Renormalize post masking
         total = sum(pi)
         if total == 0:
           pi[action_idxs[0]] = 1.0
@@ -131,7 +134,11 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
           break
 
         # Second NN moves (is playing black)
-        pi,_ = neural_network_2.safe_predict(curr_node.gamestate)
+        if curr_node in memo_nn2:
+          pi,val = memo_nn2[curr_node]
+        else:
+          pi,val = neural_network_2.safe_predict(curr_node.gamestate)
+          memo_nn2[curr_node] = (pi,val)
         pi = pi.detach().cpu().numpy().reshape(-1)
         if not curr_node.is_expanded():
           curr_node.expand()
@@ -153,14 +160,18 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
           if curr_node.gamestate.reward() == -1:
             second_win += 1
           break
-    print("[trainer.py] Episode record was White: {} | Black: {} | Tie: {}".format(first_win, second_win, 10 - (first_win+second_win)))
-    if first_win > second_win:
-      print("[trainer.py] First network better than second network, saving first")
+    print("[trainer.py] Episode record was White: {} | Black: {} | Tie: {}".format(first_win, second_win, VERIFICATION_GAMES - (first_win+second_win)))
+    if first_win/VERIFICATION_GAMES > 0.55:
+      print("[trainer.py] First network wins > 55%, saving first")
       neural_network_2.loadmodel(first_network_path, first_network_name)
       neural_network_1.savemodel("./trained_models", "best_network.tar")
-    elif second_win > first_win:
-      print("[trainer.py] Second network better than first network, saving second")
+    elif second_win/VERIFICATION_GAMES > 0.55:
+      print("[trainer.py] Second network wins > 55%, saving second")
       neural_network_1.loadmodel(second_network_path, second_network_name)
+      neural_network_1.savemodel("./trained_models", "best_network.tar")
+    else:
+      print("[trainer.py] TIE CASE: Saving first network")
+      neural_network_2.loadmodel(first_network_path, first_network_name)
       neural_network_1.savemodel("./trained_models", "best_network.tar")
 
     neural_network_1.savemodel(first_network_path,first_network_name)
@@ -171,8 +182,9 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
     print("[trainer.py] GENERATION {}".format(generation))
     generation += 1
 
-network_path = "./trained_models"
-selfplay(network_path,"working1.tar", network_path, "working2.tar",initial_state)
+if __name__ == "__main__":
+  network_path = "./trained_models"
+  selfplay(network_path,"working1.tar", network_path, "working2.tar",initial_state)
 
 
 
