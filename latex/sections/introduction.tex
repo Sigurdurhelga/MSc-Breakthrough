@@ -22,68 +22,79 @@ ourselves but these explanations are a legal requirement now in many areas, name
 medical. Recently, XAI has generally been focused on Model Interpretability, in
 particular focus on gaining insights on the concepts learned by Deep Neural Networks.
 
-This thesis takes a look at how we can examine an artificial neural network (ANN)
+In this we thesis takes a look at how we can examine an artificial neural network (ANN)
 to understand which higher level concepts (HLC) it deems important for a given state
 within games. These games can be simple like Tic-Tac-Toe or Breakthrough and extremely
-complicated like Chess or Go. If an ANN values a HLC greatly which we as humans don't find
-very important, and yet the ANN is able to defeat us there is reason to think
-that HLC should be of more importance to us.
+complicated like Chess or Go. Some of the research questions are what if an ANN values a HLC greatly
+which we as humans don't find particularily important, and yet the ANN is able to defeat
+us what does that mean?
 
 The method of examining HLC's within games has generally been done by examining the
-current state of the game by evaluating them w.r.t. a heuristic. A heuristic within
+current state of the game by evaluating them with respect to a heuristic. A heuristic within
 games are a evaluation of the end cost for a state given just the state, for example,
 the amount of pieces left within a game of chess. Intuitively, the amount of pieces
 left is a good estimate for a state in chess, this is a higher level concept we
-use to evaluate a chess position. The piece amount is much lower level than other
-concepts we use, grand master chess players evaluate a position w.r.t. states
+use to evaluate a chess position. The piece amount can be considered as a lower-level concept
+than other concepts we use. For instance, grand master chess players evaluate a position w.r.t. states
 where the king is safe from attack, or the structure of the pawn positions.
 The idea is to examine a neural networks evaluation of a state regarding
-those higher level concepts, if human players evaluate the king safety of a state
+those higher-level concepts, if human players evaluate the king safety of a state
 low but the neural network highly values it, and the neural network plays better
-than the player. There is reason for us to consider a new way to play.
+than the player. There could be an avenue for us to improve our game by considering king safety more thoroughly.
+
+In this thesis we take an example game of Breakthrough, train a neural network to play the game
+using only self-play. That is, the neural network is trained only by playing against
+itself with no outside input other than the rules of the game itself. And we examine
+the neural networks against popular Higher-level concepts (heuristics) that we use
+to play the game.
+
+The neural network architecture is based of the popular AlphaZero neural network
+used to play Chess, Shogi, and Go on a superhuman level. (REMOVE ME) Unfortunately due to lack
+of thousands of TPU's this research can't go as far as to examine those more complicated
+games. (REMOVE ME)
 
 
-The chess engine DeepBlue was the first chess engine to win a chess match agains a
-chess grand master. It's power in the world of chess was a marvel. DeepBlue used tree-
-search to evaluate it's position and possible moves, doing an immense amount of calcluations
-in order to arrive at the best move it could given the time constraints. The tree search
-approach is dependent on knowing which board state is good and what board state is bad,
-This can be easy when the boardstate is such that you're guaranteed to have been checkmated
-in one move, and it's incredibly hard when you boardstate is such that both you and your
-opponent have 16 pieces and are only a handfull of moves in. Generally the boardstate
-is a function of the pieces you have, how safe they are, and how opportunistic you are to
-capture your opponents pieces. These values are not obvious and require a domain expert
-to describe the situations and give the values for these cases.
+% The chess engine DeepBlue was the first chess engine to win a chess match agains a
+% chess grand master. It's power in the world of chess was a marvel. DeepBlue used tree-
+% search to evaluate it's position and possible moves, doing an immense amount of calcluations
+% in order to arrive at the best move it could given the time constraints. The tree search
+% approach is dependent on knowing which board state is good and what board state is bad,
+% This can be easy when the boardstate is such that you're guaranteed to have been checkmated
+% in one move, and it's incredibly hard when you boardstate is such that both you and your
+% opponent have 16 pieces and are only a handfull of moves in. Generally the boardstate
+% is a function of the pieces you have, how safe they are, and how opportunistic you are to
+% capture your opponents pieces. These values are not obvious and require a domain expert
+% to describe the situations and give the values for these cases.
 
-The process of evaluating chess positions did not change for many years. With the revival
-of deep neural networks this changed. A neural network is a network of connected nodes (neurons)
-that each how a specific weight. These networks are fed input which is passed through the
-network and it is updated by the weights of the neurons, the input is morphed into
-a more comprehensible value and these values are then used to generate some output.
-The output can be a binary classification for instance input=Image output=\{cat, dog\}.
-Processing the pixels and altering them to numerical values to find the output cat or dog
-is not intuitive and understanding of the values of the neurons in the network
-is not considered fruitful.
+% The process of evaluating chess positions did not change for many years. With the revival
+% of deep neural networks this changed. A neural network is a network of connected nodes (neurons)
+% that each how a specific weight. These networks are fed input which is passed through the
+% network and it is updated by the weights of the neurons, the input is morphed into
+% a more comprehensible value and these values are then used to generate some output.
+% The output can be a binary classification for instance input=Image output=\{cat, dog\}.
+% Processing the pixels and altering them to numerical values to find the output cat or dog
+% is not intuitive and understanding of the values of the neurons in the network
+% is not considered fruitful.
 
 
 
-This approach of
-chess engines is still popular today but not the reigning champion anymore. In todays
-best chess engines deep neural networks are used to
+% This approach of
+% chess engines is still popular today but not the reigning champion anymore. In todays
+% best chess engines deep neural networks are used to
 
-Deep neural network machine learning models have an amazing impact on modern society today,
-we use them to know which items to purchase, to know which people we should love, and we
-use them to drive us to work. These tasks given to deep learning models are all niceties
-for us to enjoy. However, as our dependance on them increases and their astounding success
-in any and all tasks continues, we will want to utilize them for all things. This leads
-to a utopia where decision making is removed from the hands of humans. The question we
-must ask ourselves is when do we want to know why a decision was taken, is it only when
-the decision taken is not preferrable to us. For instance, if a deep neural network model
-used by your lending authority decides you are not worty of a loan. These questions should
-have answers but as it stands today no such answer is possible.
+% Deep neural network machine learning models have an amazing impact on modern society today,
+% we use them to know which items to purchase, to know which people we should love, and we
+% use them to drive us to work. These tasks given to deep learning models are all niceties
+% for us to enjoy. However, as our dependance on them increases and their astounding success
+% in any and all tasks continues, we will want to utilize them for all things. This leads
+% to a utopia where decision making is removed from the hands of humans. The question we
+% must ask ourselves is when do we want to know why a decision was taken, is it only when
+% the decision taken is not preferrable to us. For instance, if a deep neural network model
+% used by your lending authority decides you are not worty of a loan. These questions should
+% have answers but as it stands today no such answer is possible.
 
-We can use methods like saliency maps to map a deep learning model emphasis on pixels to
-hopefully understand what portions the model is focusing on. This method however, tells us
-nothing about what
+% We can use methods like saliency maps to map a deep learning model emphasis on pixels to
+% hopefully understand what portions the model is focusing on. This method however, tells us
+% nothing about what
 
-results that are nothing but amazing.
+% results that are nothing but amazing.

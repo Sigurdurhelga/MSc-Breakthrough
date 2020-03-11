@@ -20,7 +20,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
   neural_network_1 = BreakthroughNN(state_example.cols, state_example.rows, state_example.get_move_amount())
   neural_network_2 = BreakthroughNN(state_example.cols, state_example.rows, state_example.get_move_amount())
 
-  neural_network_1.loadmodel(first_network_path, first_network_name)
+  neural_network_2.loadmodel(first_network_path, first_network_name)
 
   initial_node = Node(state_example.initial_state(), "START")
   first_win = 0

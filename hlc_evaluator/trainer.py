@@ -31,7 +31,7 @@ initial_state = selected_game.initial_state()
   Config varibles
 """
 EPISODE_AMOUNT = 5
-NEURAL_NETWORK_THINK = 25
+NEURAL_NETWORK_THINK = 50
 TEMP_THRESHOLD = 6
 TRAINING_ITERS = 4
 VERIFICATION_GAMES = 100
