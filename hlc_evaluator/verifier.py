@@ -1,6 +1,6 @@
 from monte_carlo.mcts import MCTS
 from monte_carlo.mctsnode import Node
-from game_environments.play_chess.playchess import PlayChess
+# from game_environments.play_chess.playchess import PlayChess
 from game_environments.gamenode import GameNode
 from game_environments.breakthrough.breakthrough import BTBoard, config as BTconfig
 from neural_networks.breakthrough.breakthrough_nn import BreakthroughNN
@@ -20,19 +20,29 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
   neural_network_1 = BreakthroughNN(state_example.cols, state_example.rows, state_example.get_move_amount())
   neural_network_2 = BreakthroughNN(state_example.cols, state_example.rows, state_example.get_move_amount())
 
-  neural_network_1.loadmodel(first_network_path, first_network_name)
+  neural_network_2.loadmodel(first_network_path, first_network_name)
+
+  memo_nn1 = {}
+  memo_nn2 = {}
 
   initial_node = Node(state_example.initial_state(), "START")
   first_win = 0
   second_win = 0
+
   while True:
 
 
-    for _ in tqdm(range(10)):
+    for _ in tqdm(range(10000)):
       curr_node = initial_node
       while True:
         # First NN moves
-        pi,_ = neural_network_1.predict(curr_node.gamestate)
+
+        if curr_node in memo_nn1:
+          pi,val = memo_nn1[curr_node]
+        else:
+          pi,val = neural_network_1.safe_predict(curr_node.gamestate)
+          memo_nn1[curr_node] = (pi,val)
+
         pi = pi.detach().cpu().numpy().reshape(-1)
         if not curr_node.is_expanded():
           curr_node.expand()
@@ -56,7 +66,12 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
           break
 
         # Second NN moves (is playing black)
-        pi,_ = neural_network_2.predict(curr_node.gamestate)
+        if curr_node in memo_nn2:
+          pi,val = memo_nn2[curr_node]
+        else:
+          pi,val = neural_network_2.safe_predict(curr_node.gamestate)
+          memo_nn2[curr_node] = (pi,val)
+
         pi = pi.detach().cpu().numpy().reshape(-1)
         if not curr_node.is_expanded():
           curr_node.expand()

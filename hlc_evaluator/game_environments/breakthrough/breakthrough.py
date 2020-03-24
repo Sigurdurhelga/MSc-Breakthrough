@@ -108,7 +108,7 @@ class BTBoard(GameNode):
                 elif self.board[y,x] == config.BLACK:
                     enc_board[y,x,1] = True
         if self.player == config.WHITE:
-            enc_board[:,:,2] = 1
+            enc_board[:,:,2] = True
         return enc_board
 
     def print_board(self):

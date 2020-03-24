@@ -31,12 +31,12 @@ initial_state = selected_game.initial_state()
   Config varibles
 """
 EPISODE_AMOUNT = 5
-NEURAL_NETWORK_THINK = 25
-TEMP_THRESHOLD = 6
-TRAINING_ITERS = 4
+NEURAL_NETWORK_THINK = 50
+TEMP_THRESHOLD = 250
+TRAINING_ITERS = 20
 VERIFICATION_GAMES = 100
 
-def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_monte_tree=None, verbose=False):
+def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, generation: int , verbose=False):
   initial_node = Node(game_example.initial_state(), "START")
   monte_tree = MCTS(initial_node, primary_nn)
   dataset = []
@@ -70,10 +70,10 @@ def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_
 
   return dataset
 
-def train_model(play_iterations, neural_network: BreakthroughNN, state_example: GameNode):
+def train_model(play_iterations, neural_network: BreakthroughNN, state_example: GameNode, generation: int):
   for _ in tqdm(range(play_iterations)):
-    dataset = generate_dataset(neural_network, state_example)
-    print("Dataset to train on has reward:",dataset[-1][2])
+    dataset = generate_dataset(neural_network, state_example, generation)
+    # print("Dataset to train on has reward:",dataset[-1][2])
     neural_network.train(dataset)
 
 
@@ -161,23 +161,21 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
             second_win += 1
           break
     print("[trainer.py] Episode record was White: {} | Black: {} | Tie: {}".format(first_win, second_win, VERIFICATION_GAMES - (first_win+second_win)))
-    if first_win/VERIFICATION_GAMES > 0.55:
-      print("[trainer.py] First network wins > 55%, saving first")
+    if first_win > second_win:
+      print("[trainer.py] First network wins, saving first")
       neural_network_2.loadmodel(first_network_path, first_network_name)
       neural_network_1.savemodel("./trained_models", "best_network.tar")
-    elif second_win/VERIFICATION_GAMES > 0.55:
-      print("[trainer.py] Second network wins > 55%, saving second")
+      print("[trainer.py] STARTING TRAINING")
+      train_model(TRAINING_ITERS, neural_network_1, state_example, generation)
+    else:
+      print("[trainer.py] Second network wins, saving second")
       neural_network_1.loadmodel(second_network_path, second_network_name)
       neural_network_1.savemodel("./trained_models", "best_network.tar")
-    else:
-      print("[trainer.py] TIE CASE: Saving first network")
-      neural_network_2.loadmodel(first_network_path, first_network_name)
-      neural_network_1.savemodel("./trained_models", "best_network.tar")
+      print("[trainer.py] STARTING TRAINING")
+      train_model(TRAINING_ITERS, neural_network_2, state_example, generation)
 
     neural_network_1.savemodel(first_network_path,first_network_name)
     neural_network_2.savemodel(second_network_path,second_network_name)
-    print("[trainer.py] STARTING TRAINING")
-    train_model(TRAINING_ITERS, neural_network_1, state_example)
     print("[trainer.py] DONE TRAINING")
     print("[trainer.py] GENERATION {}".format(generation))
     generation += 1
