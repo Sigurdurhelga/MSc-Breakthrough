@@ -1,8 +1,15 @@
 \chapter{Methods}
 
+To train neural networks to play breakthrough we employ a process of self play, where two neural networks are first
+randomly initialized, then they play against each other. They play for $1000$ games, and the neural network that wins
+lets call that one more games is called $m_1$ and the other $M_2$. $M_1$'s weights are then copied to $M_2$. Then $M_1$,
+plays against itself for $20$ iterations recording the outcome of the game. The outcome is compiled to a dataset containing
+four values ($b$, $p$, $v$, $r$). $b$ stands for a gamestate within it's simulation while playing against itself, $p$ stands
+for the policy returned by the neural network by 
+
 \section{Monte Carlo Tree Search}
 
-To train the models  
+
 
 %\section{Machine learning methods}
 

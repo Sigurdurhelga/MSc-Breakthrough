@@ -127,6 +127,87 @@ class BTBoard(GameNode):
         print("legal moves:",self.legal_moves())
         print("==================")
 
+    """
+        HEURISTICS START
+    """
+
+    def heuristic_player_piece_amount(self):
+        count = 0
+        for y in range(self.rows):
+            for x in range(self.cols):
+                if self.board[y,x] == self.player:
+                    count += 1
+        return count
+
+    def heuristic_piece_difference(self):
+        count = 0
+        for y in range(self.rows):
+            for x in range(self.cols):
+                count += self.board[y,x]
+        if self.player == config.WHITE:
+            count *= -1
+        return count
+
+
+    def heuristic_furthest_piece(self):
+        if self.is_terminal():
+            return 0
+        if self.player == config.WHITE:
+            for y in range(self.rows):
+                for x in range(self.cols):
+                    if self.board[y,x] == config.WHITE:
+                        return self.rows - y - 1
+        else:
+            for y in range(self.rows-1, -1, -1):
+                for x in range(self.cols):
+                    if self.board[y,x] == config.BLACK:
+                        return y
+        return -1
+
+    def heuristic_furthest_piece_difference(self):
+        furthest_white = 0
+        furthest_black = 0
+        found_white = False
+        found_black = False
+        for y in range(self.rows):
+            for x in range(self.cols):
+                if self.board[y,x] == config.WHITE:
+                    furthest_white = self.rows - y - 1
+                    found_white = True
+                    break
+            if found_white:
+                break
+        for y in range(self.rows-1,-1,-1):
+            for x in range(self.cols):
+                if self.board[y][x] == config.BLACK:
+                    furthest_black = y
+                    found_black = True
+                    break
+            if found_black:
+                break
+        return furthest_white - furthest_black
+
+    def get_heuristics(self, name=""):
+        all_heuristics = {
+            "player_piece_amount":self.heuristic_player_piece_amount,
+            "piece_difference":self.heuristic_piece_difference,
+            "furthest_piece": self.heuristic_furthest_piece,
+            "furthest_piece_difference":self.heuristic_furthest_piece_difference
+        }
+
+        results = []
+        # calculcate a specific heuristic
+        if name:
+            results.append((name, all_heuristics[name]()))
+        else:
+            for k,v in all_heuristics.items():
+                results.append((k, v()))
+        return results
+
+    """
+        HEURISTICS END
+    """
+
     def get_move_amount(self):
         return self.rows * self.cols * 6 # representing all directions we can move
 
