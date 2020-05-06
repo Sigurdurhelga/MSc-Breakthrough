@@ -47,10 +47,10 @@ class BTBoard(GameNode):
                 if y + d >= self.rows or y + d < 0:
                     continue
                 if x > 0:
-                    if self.board[y+d][x-1] == (0-self.player):
+                    if self.board[y+d][x-1] != self.player:
                         moves.append((y,x,y+d,x-1))
                 if x < self.cols-2:
-                    if self.board[y+d][x+1] == (0-self.player):
+                    if self.board[y+d][x+1] != self.player:
                         moves.append((y,x,y+d,x+1))
                 if self.board[y+d][x] == config.EMPTY:
                     moves.append((y,x,y+d,x))
@@ -108,7 +108,7 @@ class BTBoard(GameNode):
                 elif self.board[y,x] == config.BLACK:
                     enc_board[y,x,1] = True
         if self.player == config.WHITE:
-            enc_board[:,:,2] = 1
+            enc_board[:,:,2] = True
         return enc_board
 
     def print_board(self):
