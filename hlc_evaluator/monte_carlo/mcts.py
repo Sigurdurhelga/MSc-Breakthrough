@@ -171,7 +171,7 @@ class MCTS():
       for child in children:
         if not child:
           continue
-        policy[child.get_pidx()] = self.Ns[child] ** (1/temp)/total_child_visits
+        policy[child.get_pidx()] = (self.Ns[child] ** (1/temp))/total_child_visits
     return policy
 
   def simulate(self,node):
