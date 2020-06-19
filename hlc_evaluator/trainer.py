@@ -225,18 +225,18 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
             second_win += 1
           break
     print("[trainer.py] Episode record was White: {} | Black: {} | Tie: {}".format(first_win, second_win, VERIFICATION_GAMES - (first_win+second_win)))
-    if first_win/VERIFICATION_GAMES > 0.55:
-      print("[trainer.py] First network wins > 55%, saving first")
+    if first_win > second_win:
+      print("[trainer.py] First network wins, saving first")
       neural_network_2.loadmodel(first_network_path, first_network_name)
       neural_network_1.savemodel("./trained_models", "best_network.tar")
-    elif second_win/VERIFICATION_GAMES > 0.55:
-      print("[trainer.py] Second network wins > 55%, saving second")
+      print("[trainer.py] STARTING TRAINING")
+      train_model(TRAINING_ITERS, neural_network_1, state_example, generation)
+    else:
+      print("[trainer.py] Second network wins, saving second")
       neural_network_1.loadmodel(second_network_path, second_network_name)
       neural_network_1.savemodel("./trained_models", "best_network.tar")
-    else:
-      print("[trainer.py] TIE CASE: Saving first network")
-      neural_network_2.loadmodel(first_network_path, first_network_name)
-      neural_network_1.savemodel("./trained_models", "best_network.tar")
+      print("[trainer.py] STARTING TRAINING")
+      train_model(TRAINING_ITERS, neural_network_2, state_example, generation)
 
     neural_network_1.savemodel(first_network_path,first_network_name)
     neural_network_2.savemodel(second_network_path,second_network_name)

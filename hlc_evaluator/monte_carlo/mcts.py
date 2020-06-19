@@ -120,6 +120,10 @@ class MCTS():
 
         policy = policy.detach().cpu().numpy().reshape(-1)
         value = value.item()
+        # as nn isn't negamaxed we should invert value if we're playing black
+        if curr_node.gamestate.player == 1:
+          value = -value
+
         self.backpropagate(value, path)
 
         if curr_node.gamestate.is_terminal():
@@ -145,6 +149,7 @@ class MCTS():
         best_child = 0
 
         all_action_sum = sum(self.Qs[child]/(self.Ns[child]+1) for child in children)
+
         for child in children:
           if not child:
             continue

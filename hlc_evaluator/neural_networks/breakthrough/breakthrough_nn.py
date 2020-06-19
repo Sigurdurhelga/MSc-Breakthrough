@@ -107,7 +107,7 @@ class BreakthroughNN(NNBase):
 
       self.scheduler.step()
       losses.append(total_loss)
-    print(f"[breakthrough_nn.py train()] total losses for training were {losses}")
+    # print(f"[breakthrough_nn.py train()] total losses for training were {losses}")
 
   def savemodel(self, path, filename):
     filepath = os.path.join(path,filename)
