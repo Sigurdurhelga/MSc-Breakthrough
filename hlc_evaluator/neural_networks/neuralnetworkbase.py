@@ -1,4 +1,3 @@
-from __future__ import annotations
 from abc import ABC, abstractmethod
 
 class NNBase(ABC):
@@ -19,7 +18,7 @@ class NNBase(ABC):
   @abstractmethod
   def safe_predict(self, example):
     """
-      Given an example return P,v (policy and value) for the example (boardstate) 
+      Given an example return P,v (policy and value) for the example (boardstate)
       Safe means it wraps prediction in torch nograd so we have no sideeffects
     """
     pass
@@ -40,7 +39,7 @@ class NNBase(ABC):
     pass
 
   @abstractmethod
-  def loadmodel(self, folder:str, filename:str) -> NNBase:
+  def loadmodel(self, folder:str, filename:str):
     """
       Loads the model from a .h5 file in the folder+filename
     """

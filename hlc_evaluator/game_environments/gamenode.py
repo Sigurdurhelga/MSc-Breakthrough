@@ -1,4 +1,3 @@
-from __future__ import annotations
 from abc import ABC, abstractmethod
 from copy import copy
 import numpy as np
@@ -16,11 +15,7 @@ class GameNode(ABC):
     pass
 
   @abstractmethod
-  def legal_moves(self) -> list:
-    pass
-
-  @abstractmethod
-  def execute_move(self, move) -> GameNode:
+  def execute_move(self, move):
     pass
 
   @abstractmethod
@@ -32,7 +27,7 @@ class GameNode(ABC):
     pass
 
   @abstractmethod
-  def initial_state(self) -> GameNode:
+  def initial_state(self):
     pass
 
   @abstractmethod

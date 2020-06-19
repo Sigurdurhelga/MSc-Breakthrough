@@ -29,7 +29,7 @@ class BoardData(Dataset):
 
   def __getitem__(self, idx):
     xboard, xpolicy, xvalue = self.X[idx]
-    xboard = torch.FloatTensor(xboard.transpose(2,0,1))
+    xboard = torch.FloatTensor(xboard)
     xpolicy = torch.FloatTensor(np.array(xpolicy))
     xvalue = torch.FloatTensor(np.array(xvalue).astype(np.float64))
 
@@ -45,19 +45,27 @@ class BreakthroughNN(NNBase):
     self.optimizer = optim.Adam(self.neural_network.parameters())
     self.scheduler = optim.lr_scheduler.MultiStepLR(self.optimizer, milestones=[100,200,400,800], gamma=0.777)
 
+  def forward_0(self, example):
+    if config.cuda:
+      example = example.cuda()
+    return self.neural_network.forward_0(example)
+
+  def forward_1(self, example):
+    return self.neural_network.forward_1(example)
+
 
   def predict(self, example):
     if type(example) != np.ndarray:
       example = example.encode_state()
-    example = torch.FloatTensor(example.transpose(2,0,1))
+    example = torch.FloatTensor(example)
     if config.cuda:
       example = example.cuda()
-    return self.neural_network(example)
+    return self.neural_network.forward(example)
 
   def safe_predict(self, example):
     if type(example) != np.ndarray:
       example = example.encode_state()
-    example = torch.FloatTensor(example.transpose(2,0,1))
+    example = torch.FloatTensor(example)
     if config.cuda:
       example = example.cuda()
     output = None

@@ -1,4 +1,4 @@
-from __future__ import annotations
+# from __future__ import annotations
 from abc import ABC, abstractmethod
 import numpy as np
 from game_environments.gamenode import GameNode
@@ -7,7 +7,7 @@ class Node():
   """
     Class reperesenting nodes within a MCTS tree
   """
-  def __init__(self, gamestate: GameNode, action=""):
+  def __init__(self, gamestate, action=""):
     self.gamestate = gamestate
     self.action = action
     self.expanded = False
@@ -21,7 +21,7 @@ class Node():
     "fills the children list in the node"
     assert not self.is_expanded(), "calling expand on expanded node is bad"
     self.children = [None] * self.gamestate.get_move_amount()
-    for move in self.gamestate.legal_moves():
+    for move in self.gamestate.legal_moves:
       new_child = Node(self.gamestate.execute_move(move), move)
       self.children[new_child.get_pidx()] = new_child
     self.expanded = True
@@ -31,7 +31,7 @@ class Node():
       return
     y1,x1,y2,x2 = self.action
     direction = 0 if y1 < y2 else 3
-    direction += 0 if x1 < x2 else 1 if x1 == x2 else 2
+    direction += 0 if x1 > x2 else 1 if x1 == x2 else 2
     # the 6 here is breakthrough specific make a method (width * height * z) + (width * y) + x
     return (self.gamestate.rows * self.gamestate.cols * direction) + (self.gamestate.cols * y2) + x2
 

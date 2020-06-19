@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 import numpy as np
 from copy import deepcopy, copy
@@ -28,13 +27,16 @@ class BTBoard(GameNode):
         self.rows = len(board_list)
         self.cols = len(board_list[0])
         self.player = player
+        self.legal_moves_helper()
         self.terminal = self.is_terminal_helper()
+        if self.terminal:
+            self.legal_moves = []
 
 
-    def legal_moves(self) -> list:
+    def legal_moves_helper(self) -> list:
         """
         Legal_moves()
-            - returns a list of legal moves for the BTBoard
+            - sets self.legal_moves to a list of legal moves for the BTBoard
                 list contains tuples with (x1, y1, x2, y2) representing
                 moving piece at col x1 row y2 to col x2 row y2
         """
@@ -49,12 +51,12 @@ class BTBoard(GameNode):
                 if x > 0:
                     if self.board[y+d][x-1] != self.player:
                         moves.append((y,x,y+d,x-1))
-                if x < self.cols-2:
+                if x < self.cols-1:
                     if self.board[y+d][x+1] != self.player:
                         moves.append((y,x,y+d,x+1))
                 if self.board[y+d][x] == config.EMPTY:
                     moves.append((y,x,y+d,x))
-        return moves
+        self.legal_moves = moves
 
     def execute_move(self,move):
         """
@@ -86,9 +88,9 @@ class BTBoard(GameNode):
     def is_terminal_helper(self) -> bool:
         return any(x == config.BLACK for x in self.board[-1,:]) \
                 or any(x == config.WHITE for x in self.board[0,:]) \
-                or len(self.legal_moves()) == 0
+                or len(self.legal_moves) == 0
 
-    def initial_state(self) -> BTBoard:
+    def initial_state(self):
         new_board = np.zeros([self.rows, self.cols]).astype(int)
         new_board[:2,:] = config.BLACK
         new_board[-2:,:] = config.WHITE
@@ -100,15 +102,14 @@ class BTBoard(GameNode):
             - Returns an encoded version of the BTBoard, this encoded
               version will be run through NeuralNetworks
         """
-        enc_board = np.zeros([self.rows, self.cols,3])
-        for y in range(self.rows):
-            for x in range(self.cols):
-                if self.board[y,x] == config.WHITE:
-                    enc_board[y,x,0] = True
-                elif self.board[y,x] == config.BLACK:
-                    enc_board[y,x,1] = True
-        if self.player == config.WHITE:
-            enc_board[:,:,2] = True
+        enc_board = np.zeros([self.rows+1, self.cols, 6])
+        for m in self.legal_moves:
+            y1,x1,y2,x2 = m
+            direction = 0 if y1 < y2 else 3
+            direction += 0 if x1 > x2 else 1 if x1 == x2 else 2
+            enc_board[y1,x1,direction] = 1
+
+        enc_board[self.rows,:,:] = 1 if self.player == config.WHITE else 0
         return enc_board
 
     def print_board(self):
@@ -124,7 +125,7 @@ class BTBoard(GameNode):
             print(str(idx)+" "+" ".join(["w" if c == config.WHITE else "b" if c == config.BLACK else "·" for c in row]))
         print("  "+" ".join([str(x) for x in list(range(self.cols))]))
         print("-"*(self.cols + 4 + self.cols - 1))
-        print("legal moves:",self.legal_moves())
+        print("legal moves:",self.legal_moves)
         print("==================")
 
     """
@@ -185,7 +186,10 @@ class BTBoard(GameNode):
                     break
             if found_black:
                 break
-        return furthest_white - furthest_black
+        out = furthest_white - furthest_black
+        if self.player == config.BLACK:
+            out = -out
+        return out
 
     def get_heuristics(self, name=""):
         all_heuristics = {

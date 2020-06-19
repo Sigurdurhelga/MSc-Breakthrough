@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+from collections import defaultdict
+
 
 class ConvBlock(nn.Module):
   def __init__(self, game_width, game_height, conv_filters=128):
@@ -8,20 +10,21 @@ class ConvBlock(nn.Module):
     self.game_width = game_width
     self.game_height = game_height
 
-    self.conv1      = nn.Conv2d(in_channels=3, out_channels=self.conv_filters, kernel_size=3, stride=1, padding=1, bias=False)
+    self.conv1      = nn.Conv2d(in_channels=7, out_channels=self.conv_filters, kernel_size=3, stride=1, padding=1, bias=False)
     self.batchnorm1 = nn.BatchNorm2d(self.conv_filters)
     self.relu1      = nn.ReLU()
 
   def forward(self,in_val):
-    in_val = in_val.view(-1,3,self.game_width,self.game_height)
+    in_val = in_val.view(-1,7,self.game_width,self.game_height)
     output = self.conv1(in_val)
     output = self.batchnorm1(output)
     return self.relu1(output)
 
 class ResBlock(nn.Module):
-  def __init__(self, conv_filters=128):
+  def __init__(self, conv_filters=128, layer_name=""):
     super(ResBlock, self).__init__()
     self.conv_filters = conv_filters
+    self.layer_name = layer_name
 
     self.conv1 = nn.Conv2d(
       in_channels=self.conv_filters,
@@ -117,24 +120,40 @@ class BreakThroughAlphaZero(nn.Module):
     self.convBlock = ConvBlock(game_width, game_height, conv_filters)
     self.residualBlocks = []
     for i in range(5):
-      setattr(self, f"res_{i}", ResBlock(conv_filters))
+      setattr(self, f"res_{i}", ResBlock(conv_filters, "res_layer_{}".format(i)))
 
     self.outBlock = OutBlock(game_width, game_height, game_move_amount, conv_filters)
 
   def forward(self, in_val):
+    return self.forward_1(self.forward_0(in_val))
+
+
+  def forward_0(self, in_val):
     output = self.convBlock(in_val)
     for i in range(5):
       output = getattr(self, f"res_{i}")(output)
-    output = self.outBlock(output)
-
     return output
+
+  def forward_1(self, in_val):
+    output = self.outBlock(in_val)
+    return output
+
 
 class AlphaLoss(nn.Module):
   def __init__(self):
     super(AlphaLoss, self).__init__()
 
   def forward(self, y_value, x_value, y_policy, x_policy):
+    # torch.set_printoptions(profile="full")
+
+    # print("y_value",y_value.view(-1))
+    # print("x_value",x_value)
+    # print("y_policy",y_policy)
+    # print("x_policy",x_policy)
     value_error = (x_value - y_value.view(-1)) ** 2 # squared error
-    policy_error = -torch.sum(x_policy * y_policy)/y_policy.size()[0]
-    total_error = (value_error.view(-1) + policy_error).mean()
+    # policy_error = -torch.sum(x_policy * y_policy)/y_policy.size()[0]
+    policy_error = -torch.sum(x_policy * y_policy) / y_policy.shape[0]
+
+    # policy_error = torch.sum(y_policy * y_policy)/ y_policy.size()[0]
+    total_error = (value_error.mean() + policy_error)
     return total_error
