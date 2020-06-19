@@ -9,7 +9,7 @@ import numpy as np
 from tqdm import tqdm
 
 GAME = {
-    "breakthrough": BTBoard(np.zeros([5,4]), 1),
+    "breakthrough": BTBoard(np.zeros([6,6]), 1),
 }
 
 selected_game = GAME["breakthrough"]
@@ -20,15 +20,21 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
   neural_network_1 = BreakthroughNN(state_example.cols, state_example.rows, state_example.get_move_amount())
   neural_network_2 = BreakthroughNN(state_example.cols, state_example.rows, state_example.get_move_amount())
 
-  neural_network_2.loadmodel(first_network_path, first_network_name)
+  test_as_white = True
+
+  if test_as_white:
+    neural_network_1.loadmodel(first_network_path, first_network_name)
+  else:
+    neural_network_2.loadmodel(first_network_path, first_network_name)
 
   initial_node = Node(state_example.initial_state(), "START")
   first_win = 0
   second_win = 0
+  total_games = 0
   while True:
 
 
-    for _ in tqdm(range(10)):
+    for _ in tqdm(range(100)):
       curr_node = initial_node
       while True:
         # First NN moves
@@ -81,7 +87,11 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
     print("ENDGAME:")
     curr_node.gamestate.print_board()
     print("STATS AFTER EPISODE")
-    print("Bestnetwork {} random {}".format(first_win, second_win))
+    total_games = first_win + second_win
+    if test_as_white:
+      print("Bestnetwork {} random {} winrate {}".format(first_win, second_win, first_win / total_games))
+    else:
+      print("Bestnetwork {} random {} winrate {}".format(second_win, first_win, second_win / total_games))
 
 network_path = "./trained_models"
-selfplay(network_path,"test.tar", network_path, "random.tar",initial_state)
+selfplay(network_path,"totest.tar", network_path, "random.tar",initial_state)
