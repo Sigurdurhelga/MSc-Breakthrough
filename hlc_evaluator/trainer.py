@@ -20,7 +20,7 @@ from tqdm import tqdm
 
 
 GAME = {
-    "breakthrough": BTBoard(np.zeros([5,4]), 1),
+    "breakthrough": BTBoard(np.zeros([6,6]), 1),
 }
 
 selected_game = GAME["breakthrough"]
@@ -31,35 +31,57 @@ initial_state = selected_game.initial_state()
   Config varibles
 """
 EPISODE_AMOUNT = 5
-NEURAL_NETWORK_THINK = 50
+NEURAL_NETWORK_THINK = 10
 TEMP_THRESHOLD = 6
 TRAINING_ITERS = 4
 VERIFICATION_GAMES = 100
 
+ITERATION = 0
+
+DIRECT_TRAINING_WITH_NN = False
+
 def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_monte_tree=None, verbose=False):
+  global ITERATION
   initial_node = Node(game_example.initial_state(), "START")
   monte_tree = MCTS(initial_node, primary_nn)
   dataset = []
 
   monte_tree.set_node(monte_tree.initial_root)
   curr_node = monte_tree.root
-  action_depth = 0
-  while True:
-    if curr_node.gamestate.is_terminal():
-      break
+
+  temp = 1 * (0.999 ** (ITERATION))
+
+  whiteplaying = True
+
+  # firstly generate dataset from white point of view
+  while not curr_node.gamestate.is_terminal():
 
     # selection / expantion / rollout
     monte_tree.nn_rollout(NEURAL_NETWORK_THINK)
 
     # NNpolicy based select select best
-    temp = 1 if action_depth < TEMP_THRESHOLD else 0
-    pi = monte_tree.get_policy(temp)
-    datapoint = [curr_node.gamestate.encode_state(), pi, 0]
-    dataset.append(datapoint)
+    if temp < 0.1:
+      temp = 0
+
+    # use this to use Ns to direct training process
+    if not DIRECT_TRAINING_WITH_NN:
+      pi = monte_tree.get_policy(temp)
+    # use this to use prediction to direct trainng process
+    else:
+      pi,_ = primary_nn.safe_predict(curr_node.gamestate)
+      pi = pi.detach().cpu().numpy().reshape(-1)
+      action_idxs = [child.get_pidx() for child in curr_node.children if child]
+      mask_idxs = [i for i in range(len(pi)) if i not in action_idxs]
+      pi[mask_idxs] = 0
+    pi = pi / sum(pi)
+
+    if whiteplaying:
+      datapoint = [curr_node.gamestate.encode_state(), pi, 0]
+      dataset.append(datapoint)
+
     best_child = np.random.choice(curr_node.children, p=pi)
     monte_tree.move_to_child(best_child.action)
     curr_node = monte_tree.root
-    action_depth += 1
 
   reward = curr_node.gamestate.reward()
   dataset.append([curr_node.gamestate.encode_state(), monte_tree.get_policy(),0])
@@ -68,17 +90,58 @@ def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_
     dataset[i+1][2] = reward
   # print("[TRAINING] datapoints gathered amount: {}".format(len(dataset)))
 
+  # secondly generate dataset from blacks point of view
+  black_dataset = []
+  whiteplaying = True
+  while not curr_node.gamestate.is_terminal():
+
+    # selection / expantion / rollout
+    monte_tree.nn_rollout(NEURAL_NETWORK_THINK)
+
+    # NNpolicy based select select best
+    if temp < 0.1:
+      temp = 0
+
+    # use this to use Ns to direct training process
+    if not DIRECT_TRAINING_WITH_NN:
+      pi = monte_tree.get_policy(temp)
+    # use this to use prediction to direct trainng process
+    else:
+      pi,_ = primary_nn.safe_predict(curr_node.gamestate)
+      pi = pi.detach().cpu().numpy().reshape(-1)
+      action_idxs = [child.get_pidx() for child in curr_node.children if child]
+      mask_idxs = [i for i in range(len(pi)) if i not in action_idxs]
+      pi[mask_idxs] = 0
+    pi = pi / sum(pi)
+
+    if not whiteplaying:
+      datapoint = [curr_node.gamestate.encode_state(), pi, 0]
+      black_dataset.append(datapoint)
+
+    best_child = np.random.choice(curr_node.children, p=pi)
+    monte_tree.move_to_child(best_child.action)
+    curr_node = monte_tree.root
+
+  reward = curr_node.gamestate.reward()
+  black_dataset.append([curr_node.gamestate.encode_state(), monte_tree.get_policy(),0])
+
+  for i in range(len(black_dataset)-1):
+    black_dataset[i+1][2] = reward
+
+  dataset.extend(black_dataset)
+
   return dataset
 
 def train_model(play_iterations, neural_network: BreakthroughNN, state_example: GameNode):
-  for _ in tqdm(range(play_iterations)):
-    dataset = generate_dataset(neural_network, state_example)
-    print("Dataset to train on has reward:",dataset[-1][2])
-    neural_network.train(dataset)
+  for _ in tqdm(range(TRAINING_ITERS)):
+    for _ in tqdm(range(play_iterations)):
+      dataset = generate_dataset(neural_network, state_example)
+      neural_network.train(dataset)
 
 
 
 def selfplay(first_network_path, first_network_name, second_network_path, second_network_name, state_example):
+  global ITERATION
 
   neural_network_1 = BreakthroughNN(state_example.cols, state_example.rows, state_example.get_move_amount())
   neural_network_2 = BreakthroughNN(state_example.cols, state_example.rows, state_example.get_move_amount())
@@ -97,6 +160,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
     memo_nn1.clear()
     memo_nn2.clear()
 
+    ITERATION += 1
     first_win = 0
     second_win = 0
     print("[trainer.py] STARTING VERIFICATION OF NN's")
@@ -176,6 +240,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
 
     neural_network_1.savemodel(first_network_path,first_network_name)
     neural_network_2.savemodel(second_network_path,second_network_name)
+
     print("[trainer.py] STARTING TRAINING")
     train_model(TRAINING_ITERS, neural_network_1, state_example)
     print("[trainer.py] DONE TRAINING")
