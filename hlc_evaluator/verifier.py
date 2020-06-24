@@ -20,7 +20,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
   neural_network_1 = BreakthroughNN(state_example.cols, state_example.rows, state_example.get_move_amount())
   neural_network_2 = BreakthroughNN(state_example.cols, state_example.rows, state_example.get_move_amount())
 
-  test_as_white = True
+  test_as_white = False
 
   if test_as_white:
     neural_network_1.loadmodel(first_network_path, first_network_name)
@@ -30,38 +30,28 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
   memo_nn1 = {}
   memo_nn2 = {}
 
+  NN_THINK = 50
+
   initial_node = Node(state_example.initial_state(), "START")
   first_win = 0
   second_win = 0
   total_games = 0
   while True:
 
-
     for _ in tqdm(range(100)):
       curr_node = initial_node
+      monte_tree_1 = MCTS()
+      monte_tree_2 = MCTS()
+      total_games += 1
       while True:
-        # First NN moves
 
-        if curr_node in memo_nn1:
-          pi,val = memo_nn1[curr_node]
-        else:
-          pi,val = neural_network_1.safe_predict(curr_node.gamestate)
-          memo_nn1[curr_node] = (pi,val)
+        # WHITE MOVES
+        pi = monte_tree_1.get_policy(curr_node, NN_THINK, neural_network_1)
 
-        pi = pi.detach().cpu().numpy().reshape(-1)
-        if not curr_node.is_expanded():
-          curr_node.expand()
-
-        action_idxs = [child.get_pidx() for child in curr_node.children if child]
-        mask_idxs = [i for i in range(len(pi)) if i not in action_idxs]
-        pi[mask_idxs] = 0
-        # curr_node.gamestate.print_board()
-
-        total = sum(pi)
-        if total == 0:
-          pi[action_idxs[0]] = 1.0
-        else:
-          pi = pi / total
+        for i,child in enumerate(curr_node.children):
+          if not child:
+            pi[i] = 0
+        pi = pi / sum(pi)
 
         curr_node = np.random.choice(curr_node.children, p=pi)
 
@@ -70,38 +60,27 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
             first_win += 1
           break
 
-        # Second NN moves (is playing black)
-        if curr_node in memo_nn2:
-          pi,val = memo_nn2[curr_node]
-        else:
-          pi,val = neural_network_2.safe_predict(curr_node.gamestate)
-          memo_nn2[curr_node] = (pi,val)
+        # BLACK MOVES
+        pi = monte_tree_2.get_policy(curr_node, NN_THINK, neural_network_2)
 
-        pi = pi.detach().cpu().numpy().reshape(-1)
-        if not curr_node.is_expanded():
-          curr_node.expand()
-
-        action_idxs = [child.get_pidx() for child in curr_node.children if child]
-        mask_idxs = [i for i in range(len(pi)) if i not in action_idxs]
-        pi[mask_idxs] = 0
-
-        # curr_node.gamestate.print_board()
-
-        total = sum(pi)
-        if total == 0:
-          pi[action_idxs[0]] = 1.0
-        else:
-          pi = pi / total
+        for i,child in enumerate(curr_node.children):
+          if not child:
+            pi[i] = 0
+        pi = pi / sum(pi)
 
         curr_node = np.random.choice(curr_node.children, p=pi)
+
         if curr_node.gamestate.is_terminal():
           if curr_node.gamestate.reward() == -1:
             second_win += 1
           break
+      if test_as_white:
+        print("Bestnetwork {} random {} winrate {}".format(first_win, second_win, first_win / total_games))
+      else:
+        print("Bestnetwork {} random {} winrate {}".format(second_win, first_win, second_win / total_games))
     print("ENDGAME:")
     curr_node.gamestate.print_board()
     print("STATS AFTER EPISODE")
-    total_games = first_win + second_win
     if test_as_white:
       print("Bestnetwork {} random {} winrate {}".format(first_win, second_win, first_win / total_games))
     else:

@@ -119,7 +119,7 @@ class BreakThroughAlphaZero(nn.Module):
     super(BreakThroughAlphaZero, self).__init__()
     self.convBlock = ConvBlock(game_width, game_height, conv_filters)
     self.residualBlocks = []
-    for i in range(5):
+    for i in range(2):
       setattr(self, f"res_{i}", ResBlock(conv_filters, "res_layer_{}".format(i)))
 
     self.outBlock = OutBlock(game_width, game_height, game_move_amount, conv_filters)
@@ -130,7 +130,7 @@ class BreakThroughAlphaZero(nn.Module):
 
   def forward_0(self, in_val):
     output = self.convBlock(in_val)
-    for i in range(5):
+    for i in range(2):
       output = getattr(self, f"res_{i}")(output)
     return output
 
@@ -150,10 +150,16 @@ class AlphaLoss(nn.Module):
     # print("x_value",x_value)
     # print("y_policy",y_policy)
     # print("x_policy",x_policy)
-    value_error = (x_value - y_value.view(-1)) ** 2 # squared error
+    value_error = torch.mean((x_value - y_value.view(-1)) ** 2) # squared error
     # policy_error = -torch.sum(x_policy * y_policy)/y_policy.size()[0]
-    policy_error = -torch.sum(x_policy * y_policy) / y_policy.shape[0]
+    policy_error = -torch.sum(x_policy * y_policy)/y_policy.size()[0]
+
+    # print("value error:",value_error)
+    # print("policy error:",policy_error)
+
+    # print("sum val:",torch.sum(value_error))
+    # exit()
 
     # policy_error = torch.sum(y_policy * y_policy)/ y_policy.size()[0]
-    total_error = (value_error.mean() + policy_error)
+    total_error = value_error + policy_error
     return total_error

@@ -30,100 +30,79 @@ initial_state = selected_game.initial_state()
 """
   Config varibles
 """
-EPISODE_AMOUNT = 5
-NEURAL_NETWORK_THINK = 10
-TEMP_THRESHOLD = 6
-TRAINING_ITERS = 4
-VERIFICATION_GAMES = 100
+EPISODE_AMOUNT = 2
+NEURAL_NETWORK_THINK = 50
+TEMP_THRESHOLD = 10000
+TRAINING_ITERS = 2
+VERIFICATION_GAMES = 10
 
 ITERATION = 0
 
-DIRECT_TRAINING_WITH_NN = False
-
 def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_monte_tree=None, verbose=False):
   global ITERATION
-  initial_node = Node(game_example.initial_state(), "START")
-  monte_tree = MCTS(initial_node, primary_nn)
+  curr_node = Node(game_example.initial_state(), "START")
+  monte_tree = MCTS()
   dataset = []
 
-  monte_tree.set_node(monte_tree.initial_root)
-  curr_node = monte_tree.root
 
   temp = 1 * (0.999 ** (ITERATION))
+  print("[trainer.py] playing with temp:",temp)
 
   whiteplaying = True
 
   # firstly generate dataset from white point of view
   while not curr_node.gamestate.is_terminal():
 
-    # selection / expantion / rollout
-    monte_tree.nn_rollout(NEURAL_NETWORK_THINK)
-
     # NNpolicy based select select best
     if temp < 0.1:
       temp = 0
 
-    # use this to use Ns to direct training process
-    if not DIRECT_TRAINING_WITH_NN:
-      pi = monte_tree.get_policy(temp)
-    # use this to use prediction to direct trainng process
-    else:
-      pi,_ = primary_nn.safe_predict(curr_node.gamestate)
-      pi = pi.detach().cpu().numpy().reshape(-1)
-      action_idxs = [child.get_pidx() for child in curr_node.children if child]
-      mask_idxs = [i for i in range(len(pi)) if i not in action_idxs]
-      pi[mask_idxs] = 0
+    pi = monte_tree.get_policy(curr_node,NEURAL_NETWORK_THINK, primary_nn, temp)
+    for i,child in enumerate(curr_node.children):
+      if not child:
+        pi[i] = 0
     pi = pi / sum(pi)
 
     if whiteplaying:
       datapoint = [curr_node.gamestate.encode_state(), pi, 0]
       dataset.append(datapoint)
 
-    best_child = np.random.choice(curr_node.children, p=pi)
-    monte_tree.move_to_child(best_child.action)
-    curr_node = monte_tree.root
+    curr_node = np.random.choice(curr_node.children, p=pi)
+    whiteplaying = not whiteplaying
 
   reward = curr_node.gamestate.reward()
-  dataset.append([curr_node.gamestate.encode_state(), monte_tree.get_policy(),0])
+  print("[generating dataset] playing as white reward {}".format(reward))
 
   for i in range(len(dataset)-1):
     dataset[i+1][2] = reward
   # print("[TRAINING] datapoints gathered amount: {}".format(len(dataset)))
 
+  curr_node = Node(game_example.initial_state(), "START")
   # secondly generate dataset from blacks point of view
   black_dataset = []
   whiteplaying = True
   while not curr_node.gamestate.is_terminal():
 
-    # selection / expantion / rollout
-    monte_tree.nn_rollout(NEURAL_NETWORK_THINK)
-
     # NNpolicy based select select best
     if temp < 0.1:
       temp = 0
 
-    # use this to use Ns to direct training process
-    if not DIRECT_TRAINING_WITH_NN:
-      pi = monte_tree.get_policy(temp)
-    # use this to use prediction to direct trainng process
-    else:
-      pi,_ = primary_nn.safe_predict(curr_node.gamestate)
-      pi = pi.detach().cpu().numpy().reshape(-1)
-      action_idxs = [child.get_pidx() for child in curr_node.children if child]
-      mask_idxs = [i for i in range(len(pi)) if i not in action_idxs]
-      pi[mask_idxs] = 0
+    pi = monte_tree.get_policy(curr_node,NEURAL_NETWORK_THINK,primary_nn,temp)
+    for i,child in enumerate(curr_node.children):
+      if not child:
+        pi[i] = 0
     pi = pi / sum(pi)
 
     if not whiteplaying:
       datapoint = [curr_node.gamestate.encode_state(), pi, 0]
       black_dataset.append(datapoint)
 
-    best_child = np.random.choice(curr_node.children, p=pi)
-    monte_tree.move_to_child(best_child.action)
-    curr_node = monte_tree.root
+    curr_node = np.random.choice(curr_node.children, p=pi)
+
+    whiteplaying = not whiteplaying
 
   reward = curr_node.gamestate.reward()
-  black_dataset.append([curr_node.gamestate.encode_state(), monte_tree.get_policy(),0])
+  print("[generating dataset] playing as black reward {}".format(reward))
 
   for i in range(len(black_dataset)-1):
     black_dataset[i+1][2] = reward
@@ -132,9 +111,9 @@ def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_
 
   return dataset
 
-def train_model(play_iterations, neural_network: BreakthroughNN, state_example: GameNode):
+def train_model(neural_network: BreakthroughNN, state_example: GameNode):
   for _ in tqdm(range(TRAINING_ITERS)):
-    for _ in tqdm(range(play_iterations)):
+    for _ in tqdm(range(EPISODE_AMOUNT)):
       dataset = generate_dataset(neural_network, state_example)
       neural_network.train(dataset)
 
@@ -151,98 +130,69 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
 
   initial_node = Node(state_example.initial_state(), "START")
 
-  memo_nn1 = {}
-  memo_nn2 = {}
-
   generation = 1
 
   while True:
-    memo_nn1.clear()
-    memo_nn2.clear()
-
     ITERATION += 1
     first_win = 0
     second_win = 0
-    print("[trainer.py] STARTING VERIFICATION OF NN's")
+    if generation != 1:
+      print("[trainer.py] STARTING VERIFICATION OF NN's")
 
-    for _ in tqdm(range(VERIFICATION_GAMES)):
-      curr_node = initial_node
-      while True:
-        # First NN moves
-        if curr_node in memo_nn1:
-          pi,val = memo_nn1[curr_node]
-        else:
-          pi,val = neural_network_1.safe_predict(curr_node.gamestate)
-          memo_nn1[curr_node] = (pi,val)
+      for _ in tqdm(range(VERIFICATION_GAMES)):
+        monte_tree_1 = MCTS()
+        monte_tree_2 = MCTS()
+        curr_node = initial_node
+        while True:
+          # WHITE MOVES
+          pi = monte_tree_1.get_policy(curr_node, NEURAL_NETWORK_THINK, neural_network_1)
 
-        pi = pi.detach().cpu().numpy().reshape(-1)
-        if not curr_node.is_expanded():
-          curr_node.expand()
+          for i,child in enumerate(curr_node.children):
+            if not child:
+              pi[i] = 0
+          pi = pi / sum(pi)
 
-        action_idxs = [child.get_pidx() for child in curr_node.children if child]
-        mask_idxs = [i for i in range(len(pi)) if i not in action_idxs]
-        pi[mask_idxs] = 0
+          curr_node = np.random.choice(curr_node.children, p=pi)
 
-        # Renormalize post masking
-        total = sum(pi)
-        if total == 0:
-          pi[action_idxs[0]] = 1.0
-        else:
-          pi = pi / total
+          if curr_node.gamestate.is_terminal():
+            if curr_node.gamestate.reward() == 1:
+              first_win += 1
+            break
 
-        curr_node = np.random.choice(curr_node.children, p=pi)
+          # BLACK MOVES
+          pi = monte_tree_2.get_policy(curr_node, NEURAL_NETWORK_THINK, neural_network_2)
 
-        if curr_node.gamestate.is_terminal():
-          if curr_node.gamestate.reward() == 1:
-            first_win += 1
-          break
+          for i,child in enumerate(curr_node.children):
+            if not child:
+              pi[i] = 0
+          pi = pi / sum(pi)
 
-        # Second NN moves (is playing black)
-        if curr_node in memo_nn2:
-          pi,val = memo_nn2[curr_node]
-        else:
-          pi,val = neural_network_2.safe_predict(curr_node.gamestate)
-          memo_nn2[curr_node] = (pi,val)
-        pi = pi.detach().cpu().numpy().reshape(-1)
-        if not curr_node.is_expanded():
-          curr_node.expand()
+          curr_node = np.random.choice(curr_node.children, p=pi)
 
-        action_idxs = [child.get_pidx() for child in curr_node.children if child]
-        mask_idxs = [i for i in range(len(pi)) if i not in action_idxs]
-        pi[mask_idxs] = 0
+          if curr_node.gamestate.is_terminal():
+            if curr_node.gamestate.reward() == -1:
+              second_win += 1
+            break
 
-        # curr_node.gamestate.print_board()
+      print("[trainer.py] Episode record was White: {} | Black: {} | Tie: {}".format(first_win, second_win, VERIFICATION_GAMES - (first_win+second_win)))
+      print("[trainer.py] White winrate {} | black winrate {}".format((first_win/VERIFICATION_GAMES),(second_win/VERIFICATION_GAMES)))
+      if (first_win/VERIFICATION_GAMES) > 0.55:
+        print("[trainer.py] First network wins, saving first")
+        neural_network_2.loadmodel(first_network_path, first_network_name)
 
-        total = sum(pi)
-        if total == 0:
-          pi[action_idxs[0]] = 1.0
-        else:
-          pi = pi / total
+        neural_network_1.savemodel("./trained_models", "best_network.tar")
+        neural_network_1.savemodel(first_network_path,first_network_name)
+        neural_network_2.savemodel(second_network_path,second_network_name)
+      elif (second_win/VERIFICATION_GAMES) > 0.55:
+        print("[trainer.py] Second network wins, saving second")
+        neural_network_1.loadmodel(second_network_path, second_network_name)
 
-        curr_node = np.random.choice(curr_node.children, p=pi)
-        if curr_node.gamestate.is_terminal():
-          if curr_node.gamestate.reward() == -1:
-            second_win += 1
-          break
-    print("[trainer.py] Episode record was White: {} | Black: {} | Tie: {}".format(first_win, second_win, VERIFICATION_GAMES - (first_win+second_win)))
-    if first_win > second_win:
-      print("[trainer.py] First network wins, saving first")
-      neural_network_2.loadmodel(first_network_path, first_network_name)
-      neural_network_1.savemodel("./trained_models", "best_network.tar")
-      print("[trainer.py] STARTING TRAINING")
-      train_model(TRAINING_ITERS, neural_network_1, state_example, generation)
-    else:
-      print("[trainer.py] Second network wins, saving second")
-      neural_network_1.loadmodel(second_network_path, second_network_name)
-      neural_network_1.savemodel("./trained_models", "best_network.tar")
-      print("[trainer.py] STARTING TRAINING")
-      train_model(TRAINING_ITERS, neural_network_2, state_example, generation)
-
-    neural_network_1.savemodel(first_network_path,first_network_name)
-    neural_network_2.savemodel(second_network_path,second_network_name)
+        neural_network_1.savemodel("./trained_models", "best_network.tar")
+        neural_network_1.savemodel(first_network_path,first_network_name)
+        neural_network_2.savemodel(second_network_path,second_network_name)
 
     print("[trainer.py] STARTING TRAINING")
-    train_model(TRAINING_ITERS, neural_network_1, state_example)
+    train_model(neural_network_1, state_example)
     print("[trainer.py] DONE TRAINING")
     print("[trainer.py] GENERATION {}".format(generation))
     generation += 1

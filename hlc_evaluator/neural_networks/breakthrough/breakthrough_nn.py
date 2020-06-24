@@ -13,7 +13,7 @@ from torch.nn.utils import clip_grad_norm_
 config_neuralnet = namedtuple("nnconfig", "lr epochs batch_size conv_filters cuda grad_steps")
 
 config = config_neuralnet(0.01,
-                          5,
+                          10,
                           128,
                           128,
                           torch.cuda.is_available(),
@@ -60,7 +60,8 @@ class BreakthroughNN(NNBase):
     example = torch.FloatTensor(example)
     if config.cuda:
       example = example.cuda()
-    return self.neural_network.forward(example)
+    pi,v = self.neural_network(example)
+    return (torch.exp(pi),v)
 
   def safe_predict(self, example):
     if type(example) != np.ndarray:
@@ -68,10 +69,9 @@ class BreakthroughNN(NNBase):
     example = torch.FloatTensor(example)
     if config.cuda:
       example = example.cuda()
-    output = None
     with torch.no_grad():
-      output = self.neural_network(example)
-    return output
+      pi,v = self.neural_network(example)
+    return (torch.exp(pi),v)
 
   def train(self, dataset):
     criterion = AlphaLoss()
@@ -79,6 +79,7 @@ class BreakthroughNN(NNBase):
     train_data = DataLoader(dataset, batch_size=config.batch_size, shuffle=True, pin_memory=False)
     losses = []
     for epoch in range(config.epochs):
+      self.optimizer.zero_grad()
       total_loss = 0
       for batch in train_data:
         xboard, xpolicy, xvalue = batch
@@ -101,13 +102,13 @@ class BreakthroughNN(NNBase):
         clip_grad_norm_(self.neural_network.parameters(), 1)
 
         self.optimizer.step()
-        self.optimizer.zero_grad()
+        # self.optimizer.zero_grad()
 
         total_loss += loss.item()
 
       self.scheduler.step()
       losses.append(total_loss)
-    # print(f"[breakthrough_nn.py train()] total losses for training were {losses}")
+    print(f"[breakthrough_nn.py train()] total losses for training were {losses}")
 
   def savemodel(self, path, filename):
     filepath = os.path.join(path,filename)

@@ -15,178 +15,180 @@ class MCTS():
       Ns   - dict[mctsnode.Node] - Stores the visit count for a node
       temp - float               - float representing the temp (used in puct in alphazero see paper)
   """
-  def __init__(self, root_node:Node, neural_network=None):
-    self.root = root_node
-    self.initial_root = root_node
-    self.Qs = defaultdict(float)
+  def __init__(self):
+    self.Qs = {}
     self.Ps = defaultdict(tuple)
-    self.Ns = defaultdict(int)
+    self.Ns = {}
+    self.visited = set()
     self.temp = 1
-    self.neural_network = neural_network
 
-  def move_to_best_child(self):
-      """
-        move_to_best_child()
-          - moves the root in the tree to the best child of the current root
-      """
-      assert self.root.is_expanded(), "get best child on unexpanded node, is bad"
+  def get_best_child(self,state):
+    assert state in self.visited, "cant get best child of unknown"
 
-      children = self.root.children
-      child_scores = [self.Qs[child] for child in children]
-      best_move = np.argmax(child_scores)
+    children = state.children
 
-      self.root = children[best_move]
+    best_score = -float("inf")
+    best_child = None
 
-  def move_to_child(self, move):
-    """
-      move_to_child(move)
-        - moves the root in the tree to the child from doing `move` of the current root
-    """
-    if not self.root.is_expanded():
-      self.root.expand()
-    children = self.root.children
-    for child in children:
+    for i,child in enumerate(children):
       if not child:
         continue
-      if child.action == move:
-        self.root = child
-        return
-    assert False, "Move to child didn't find move"
+      if self.Qs[state][i] > best_score:
+        best_child = child
+        best_score = self.Qs[state][i]
+    return best_child
 
-  def set_node(self, node: Node):
-    """
-      set_node(node)
-        - Force the root to a node
-    """
-    self.root = node
+  def rollout(self, state):
 
-  def rollout(self, rollout_amount=10):
-    """
-      rollout(rollout_amount)
-        - does rollout_amount many monte carlo simulations from the root
-    """
-    for _ in range(rollout_amount):
-      curr_node = self.root
-      path = []
-      uct_terminal = False
-      while True:
-        path.append(curr_node)
-        self.Ns[curr_node] += 1
-        if not curr_node.is_expanded():
-          break
-        if curr_node.gamestate.is_terminal():
-          uct_terminal = True
-          break
-
-        children = curr_node.children
-        # UCT FORMULA FOR ALL CHILDREN
-        parent_nlog = np.log(self.Ns[curr_node])
-        child_scores = [(self.Qs[child]/(self.Ns[child]+1)) + (self.temp*np.sqrt(parent_nlog/(1+self.Ns[child]))) for child in children]
-        best_child = np.argmax(child_scores)
-
-        curr_node = curr_node.children[children[best_child].get_pidx()]
-
-      if uct_terminal:
-        reward = path[-1].gamestate.reward()
-        self.backpropagate(reward, path)
-
+    if state.gamestate.is_terminal():
+      winner = state.gamestate.reward()
+      if winner == 1:
+        return -1 if state.gamestate.player == -1 else 1
       else:
-        end = path[-1]
-        #print("did rollout with path",path)
-        end.expand()
-        reward = self.simulate(end)
-        self.backpropagate(reward, path)
+        return 1 if state.gamestate.player == -1 else -1
 
-  def nn_rollout(self, rollout_amount=10):
-    """
-      rollout(rollout_amount)
-        - does rollout_amount many monte carlo simulations from the root
-    """
-    assert self.neural_network, "Can't call nn_rollout() on a MCTS without a neural network"
+    if state not in self.visited:
+      self.visited.add(state)
+      self.Qs[state] = [0] * state.gamestate.get_move_amount()
+      self.Ns[state] = [0] * state.gamestate.get_move_amount()
+      winner = self.simulate(state)
+      if winner == 1:
+        return -1 if state.gamestate.player == -1 else 1
+      else:
+        return 1 if state.gamestate.player == -1 else -1
 
-    for _ in range(rollout_amount):
-      curr_node = self.root
-      path = []
+    best_uct = -float('inf')
+    best_child = None
 
-      ## SELECTION PROCESS
-      while True:
-        path.append(curr_node)
-        self.Ns[curr_node] += 1
-        if curr_node in self.Ps:
-          policy,value = self.Ps[curr_node]
-        else:
-          policy, value = self.neural_network.safe_predict(curr_node.gamestate)
-          self.Ps[curr_node] = (policy,value)
+    if not state.is_expanded():
+      state.expand()
 
-        policy = policy.detach().cpu().numpy().reshape(-1)
-        value = value.item()
-        # as nn isn't negamaxed we should invert value if we're playing black
-        if curr_node.gamestate.player == 1:
-          value = -value
+    children = state.children
 
-        self.backpropagate(value, path)
+    parent_n = sum(self.Ns[state])
 
-        if curr_node.gamestate.is_terminal():
-          break
-        if not curr_node.is_expanded():
-          curr_node.expand()
-          break
+    uct_array = []
 
-        children = curr_node.children
+    for i,child in enumerate(children):
+      if not child:
+        uct_array.append(-float("inf"))
+        continue
+      uct = self.Qs[state][i] + self.temp * (np.sqrt(parent_n) / (1+self.Ns[state][i]))
+      uct_array.append(uct)
 
-        action_idxs = set([child.get_pidx() for child in children if child])
+    qu_array = np.array(qu_array)
+    qumax = np.max(qu_array)
 
-        mask_idxs = [i for i in range(len(policy)) if i not in action_idxs]
-        policy[mask_idxs] = 0
+    best_child = np.random.choice(np.argwhere(qu_array == qumax).flatten())
+    
+    next_board = state.gamestate.execute_move(children[best_child].action)
+    
+    next_state = Node(next_board,children[best_child].action)
 
-        # Alphazero Selection process
-        # Argmax(Q + U)
-        # Q = W / N
-        # U = temp * P(Action) * (sum(N_ALLactions) / N_action)
-        all_action_sum = 0
+    val = self.rollout(next_state)
 
-        best_qu = -float("inf")
-        best_child = 0
+    self.Qs[state][best_child] = (self.Ns[state][best_child] * self.Qs[state][best_child] + val) / (1+self.Ns[state][best_child])
+    self.Ns[state][best_child] += 1
+    return -val
 
-        all_action_sum = sum(self.Qs[child]/(self.Ns[child]+1) for child in children)
 
-        for child in children:
-          if not child:
-            continue
-          child_q = self.Qs[child] / (self.Ns[child]+1)
-          child_u = self.temp * policy[child.get_pidx()] * all_action_sum
-          if child_q + child_u > best_qu:
-            best_qu = child_q + child_u
-            best_child = child.get_pidx()
+  def nn_rollout(self,state,neural_network):
 
-        curr_node = children[best_child]
 
-  def get_policy(self, temp=1):
-    children = self.root.children
-    policy = np.zeros(self.root.gamestate.get_move_amount())
-    if temp == 0: # select only best
-      child_ns = [self.Ns[child] if child else 0 for child in children ]
-      cidx = np.argmax(child_ns)
-      policy[children[cidx].get_pidx()] = 1.0
+    if state.gamestate.is_terminal():
+      winner = state.gamestate.reward()
+      if winner == 1:
+        return -1 if state.gamestate.player == -1 else 1
+      else:
+        return 1 if state.gamestate.player == -1 else -1
+
+    if state not in self.visited:
+      self.visited.add(state)
+      self.Qs[state] = [0] * state.gamestate.get_move_amount()
+      self.Ns[state] = [0] * state.gamestate.get_move_amount()
+      policy, value = neural_network.safe_predict(state.gamestate)
+      self.Ps[state] = (policy,value)
+      # if state.gamestate.player == 1:
+        # value = -value
+      return -value
+    else:
+      policy,value = self.Ps[state]
+
+    policy = policy.detach().cpu().numpy().reshape(-1)
+    value = value.item()
+    # as nn isn't negamaxed we should invert value if we're playing black
+    # if state.gamestate.player == 1:
+      # value = -value
+
+    if not state.is_expanded():
+      state.expand()
+
+    children = state.children
+
+    # Alphazero Selection process
+    # Argmax(Q + U)
+    # Q = W / N
+    # U = temp * P(Action) * (sum(N_ALLactions) / N_action)
+
+    best_qu = -float("inf")
+    best_child = None
+
+    parent_n = np.sqrt(sum(self.Ns[state]))
+    
+    qu_array = []
+
+    for i,child in enumerate(children):
+      if not child:
+        qu_array.append(-float("inf"))
+        continue
+      qu_array.append(self.Qs[state][i] + self.temp * policy[i] * (parent_n / (1 + self.Ns[state][i])))
+
+    qu_array = np.array(qu_array)
+    qumax = np.max(qu_array)
+
+    best_child = np.random.choice(np.argwhere(qu_array == qumax).flatten())
+
+    next_board = state.gamestate.execute_move(children[best_child].action)
+    
+    next_state = Node(next_board,children[best_child].action)
+
+    val = self.nn_rollout(next_state,neural_network)
+
+    self.Qs[state][best_child] = ((self.Ns[state][best_child] * self.Qs[state][best_child]) + val) / (1+self.Ns[state][best_child])
+    self.Ns[state][best_child] += 1
+    return -val
+
+  def get_policy(self,state,simulations,nnet, temp=1):
+
+    for _ in range(simulations):
+      self.nn_rollout(state, nnet)
+
+    children = state.children
+
+    policy = [self.Ns[state][i] if child else 0 for i,child in enumerate(children)]
+
+    if temp == 0:
+      # CONSIDER LOOKING AT ALL MAX MOVES AND PICKING RANDOM
+      best_child = np.argmax(policy)
+      policy[best_child] = 1.0
 
     else:
-      total_child_visits = sum(self.Ns[child] for child in children if child) ** (1/temp)
-      if total_child_visits == 0:
-        total_child_visits = 1
-      for child in children:
-        if not child:
-          continue
-        policy[child.get_pidx()] = (self.Ns[child] ** (1/temp))/total_child_visits
-    return policy
+      policy = [x ** (1.0 / temp) for x in policy]
+      psum = sum(policy)
+      if psum == 0:
+        psum = 1
+
+      policy = [x/psum for x in policy]
+    return np.array(policy)
 
   def simulate(self,node):
     """
       simulate(node)
         - does random moves from `node` until a terminal state is reached, returns the reward for that state
     """
-    curr_node = deepcopy(self.root.gamestate)
+    curr_node = deepcopy(node.gamestate)
     while not curr_node.is_terminal():
-      moves = curr_node.legal_moves()
+      moves = curr_node.legal_moves
       curr_node = curr_node.execute_move(choice(moves))
     return curr_node.reward()
 
