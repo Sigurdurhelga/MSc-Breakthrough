@@ -10,12 +10,13 @@ class ConvBlock(nn.Module):
     self.game_width = game_width
     self.game_height = game_height
 
-    self.conv1      = nn.Conv2d(in_channels=7, out_channels=self.conv_filters, kernel_size=3, stride=1, padding=1, bias=False)
+    self.conv1      = nn.Conv2d(in_channels=3, out_channels=self.conv_filters, kernel_size=3, stride=1, padding=1, bias=False)
     self.batchnorm1 = nn.BatchNorm2d(self.conv_filters)
     self.relu1      = nn.ReLU()
 
   def forward(self,in_val):
-    in_val = in_val.view(-1,7,self.game_width,self.game_height)
+    in_val = in_val.view(-1,3,self.game_width,self.game_height)
+    # consider how this looks
     output = self.conv1(in_val)
     output = self.batchnorm1(output)
     return self.relu1(output)
