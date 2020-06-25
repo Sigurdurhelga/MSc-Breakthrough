@@ -76,10 +76,9 @@ class BreakthroughNN(NNBase):
   def train(self, dataset):
     criterion = AlphaLoss()
     dataset = BoardData(dataset)
-    train_data = DataLoader(dataset, batch_size=config.batch_size, shuffle=True, pin_memory=False)
+    train_data = DataLoader(dataset, batch_size=config.batch_size, shuffle=False, pin_memory=config.cuda)
     losses = []
     for epoch in range(config.epochs):
-      self.optimizer.zero_grad()
       total_loss = 0
       for batch in train_data:
         xboard, xpolicy, xvalue = batch
@@ -102,7 +101,7 @@ class BreakthroughNN(NNBase):
         clip_grad_norm_(self.neural_network.parameters(), 1)
 
         self.optimizer.step()
-        # self.optimizer.zero_grad()
+        self.optimizer.zero_grad()
 
         total_loss += loss.item()
 

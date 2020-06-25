@@ -20,7 +20,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
   neural_network_1 = BreakthroughNN(state_example.cols, state_example.rows, state_example.get_move_amount())
   neural_network_2 = BreakthroughNN(state_example.cols, state_example.rows, state_example.get_move_amount())
 
-  test_as_white = False
+  test_as_white = True
 
   if test_as_white:
     neural_network_1.loadmodel(first_network_path, first_network_name)
@@ -87,4 +87,4 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
       print("Bestnetwork {} random {} winrate {}".format(second_win, first_win, second_win / total_games))
 
 network_path = "./trained_models"
-selfplay(network_path,"totest.tar", network_path, "random.tar",initial_state)
+selfplay(network_path,"gen_54_network.tar", network_path, "random.tar",initial_state)

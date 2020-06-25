@@ -107,6 +107,8 @@ class MCTS():
       self.Qs[state] = [0] * state.gamestate.get_move_amount()
       self.Ns[state] = [0] * state.gamestate.get_move_amount()
       policy, value = neural_network.safe_predict(state.gamestate)
+      policy = policy.detach().cpu().numpy().reshape(-1)
+      value = value.detach().cpu().item()
       self.Ps[state] = (policy,value)
       # if state.gamestate.player == 1:
         # value = -value
@@ -114,8 +116,6 @@ class MCTS():
     else:
       policy,value = self.Ps[state]
 
-    policy = policy.detach().cpu().numpy().reshape(-1)
-    value = value.item()
     # as nn isn't negamaxed we should invert value if we're playing black
     # if state.gamestate.player == 1:
       # value = -value
@@ -124,7 +124,6 @@ class MCTS():
       state.expand()
 
     children = state.children
-
     # Alphazero Selection process
     # Argmax(Q + U)
     # Q = W / N
@@ -142,7 +141,6 @@ class MCTS():
         qu_array.append(-float("inf"))
         continue
       qu_array.append(self.Qs[state][i] + self.temp * policy[i] * (parent_n / (1 + self.Ns[state][i])))
-
     qu_array = np.array(qu_array)
     qumax = np.max(qu_array)
 
@@ -178,8 +176,8 @@ class MCTS():
       if psum == 0:
         psum = 1
 
-      policy = [x/psum for x in policy]
-    return np.array(policy)
+      policy = np.array(policy) / psum
+    return policy
 
   def simulate(self,node):
     """

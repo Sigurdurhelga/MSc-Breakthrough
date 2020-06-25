@@ -31,9 +31,9 @@ initial_state = selected_game.initial_state()
   Config varibles
 """
 EPISODE_AMOUNT = 2
-NEURAL_NETWORK_THINK = 50
+NEURAL_NETWORK_THINK = 100
 TEMP_THRESHOLD = 10000
-TRAINING_ITERS = 2
+TRAINING_ITERS = 10
 VERIFICATION_GAMES = 10
 
 ITERATION = 0
@@ -63,12 +63,11 @@ def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_
         pi[i] = 0
     pi = pi / sum(pi)
 
-    if whiteplaying:
-      datapoint = [curr_node.gamestate.encode_state(), pi, 0]
-      dataset.append(datapoint)
+    # if whiteplaying:
+    datapoint = [curr_node.gamestate.encode_state(), pi, 0]
+    dataset.append(datapoint)
 
     curr_node = np.random.choice(curr_node.children, p=pi)
-    whiteplaying = not whiteplaying
 
   reward = curr_node.gamestate.reward()
   print("[generating dataset] playing as white reward {}".format(reward))
@@ -76,11 +75,11 @@ def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_
   for i in range(len(dataset)-1):
     dataset[i+1][2] = reward
   # print("[TRAINING] datapoints gathered amount: {}".format(len(dataset)))
+  monte_tree = MCTS()
 
   curr_node = Node(game_example.initial_state(), "START")
   # secondly generate dataset from blacks point of view
   black_dataset = []
-  whiteplaying = True
   while not curr_node.gamestate.is_terminal():
 
     # NNpolicy based select select best
@@ -93,13 +92,10 @@ def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_
         pi[i] = 0
     pi = pi / sum(pi)
 
-    if not whiteplaying:
-      datapoint = [curr_node.gamestate.encode_state(), pi, 0]
-      black_dataset.append(datapoint)
+    datapoint = [curr_node.gamestate.encode_state(), pi, 0]
+    black_dataset.append(datapoint)
 
     curr_node = np.random.choice(curr_node.children, p=pi)
-
-    whiteplaying = not whiteplaying
 
   reward = curr_node.gamestate.reward()
   print("[generating dataset] playing as black reward {}".format(reward))
