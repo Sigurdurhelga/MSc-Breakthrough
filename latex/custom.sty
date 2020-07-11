@@ -319,4 +319,16 @@
 
 %%% begin siggis imports
 \usepackage{import}
+\usepackage{caption}
+\usepackage{xskak}
+\usepackage{graphicx}
+
+\newcommand{\breakthrough}[1]{
+\fenboard{#1}
+
+\chessboard[whitefieldmaskcolor=gray!50!white,addfontcolors,
+            border=false,
+            printarea=a1-f6,
+            showmover=false]
+}
 %%% end

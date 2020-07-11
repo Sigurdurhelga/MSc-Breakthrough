@@ -6,32 +6,38 @@
   achieve? What is the problem I am trying to solve?  How is my
   solution interesting or novel?}{}
 
-In the world of deep learning is exciting, we have models that are able to examine
+
+The world of deep learning (DL) is exciting, we have models that are able to examine
 images and very reliably be able to identify it's content. Deep learning models have
 beaten Opthalmologists in identifing diabetic retinopathy, they've identified
 cancer cells where others have not. Deep learning models have even predicted
 the likelyhood a person will die in the following year with good accuracy (CITE).
 These models have done these things extremely accurately, cheap, and fast.
 
+DL in conjunction with a randomized State-space Search Algorithm Monte-Carlo Tree Search, 
+was used to defeat the standing world champion NAME in the incredibly expansive game of Go. This was done in the year 
+2017, the researchers used reinforcement learning (RL), where the agent purely played against itself. 
+These result imply that given enough time to learn the computer agent is able to
+gain a deep insight on how the game should be played.  
+
 The field of examining deep learning models to gain a richer understanding
-in how they work, and what makes them so much better than humans at various tasks
+of how they work, and what makes them so much better than humans at various tasks
 is still new. This is the field of Explainable Artificial Intelligence (XAI).
 If we wish to continue using artificial intelligence (AI) and machine learning (ML),
 to improve our lives we must examine how they work, this is not only to improve
-ourselves but these explanations are a legal requirement now in many areas, namely, legal, and
+the models themselves but could also augment our ability in many cases.
+Furthermore, these explanations are a legal requirement now in many areas, namely, legal, and
 medical. Recently, XAI has generally been focused on Model Interpretability, in
 particular focus on gaining insights on the concepts learned by Deep Neural Networks.
 
 In this we thesis takes a look at how we can examine an artificial neural network (ANN)
 to understand which higher level concepts (HLC) it deems important for a given state
 within games. These games can be simple like Tic-Tac-Toe or Breakthrough and extremely
-complicated like Chess or Go. Some of the research questions are what if an ANN values a HLC greatly
-which we as humans don't find particularily important, and yet the ANN is able to defeat
-us what does that mean?
+complicated like Chess or Go. 
 
 The method of examining HLC's within games has generally been done by examining the
 current state of the game by evaluating them with respect to a heuristic. A heuristic within
-games are a evaluation of the end cost for a state given just the state, for example,
+games are an evaluation of the end cost for a state given just the state, for example,
 the amount of pieces left within a game of chess. Intuitively, the amount of pieces
 left is a good estimate for a state in chess, this is a higher level concept we
 use to evaluate a chess position. The piece amount can be considered as a lower-level concept
@@ -42,17 +48,24 @@ those higher-level concepts, if human players evaluate the king safety of a stat
 low but the neural network highly values it, and the neural network plays better
 than the player. There could be an avenue for us to improve our game by considering king safety more thoroughly.
 
+We define the research questions
+
+\begin{enumerate}
+  \item Given a NN that plays Breakthrough very well, can we evaluate if that NN recognizes the 
+  HLCs that human players use.
+  \item Does a NN that trains itself using self-play learn these HLCs over time, and does it start to emphasize 
+  the HLCs that are generally taught later to human players, more as it trains itself more.
+  \item Does a NN that plays better than some humans focus on HLCs that are not generally 
+  considered by those human players and it.
+\end{enumerate}
+
+\subsection{Summary of the thesis}
+
 In this thesis we take an example game of Breakthrough, train a neural network to play the game
 using only self-play. That is, the neural network is trained only by playing against
 itself with no outside input other than the rules of the game itself. And we examine
 the neural networks against popular Higher-level concepts (heuristics) that we use
 to play the game.
-
-The neural network architecture is based of the popular AlphaZero neural network
-used to play Chess, Shogi, and Go on a superhuman level. (REMOVE ME) Unfortunately due to lack
-of thousands of TPU's this research can't go as far as to examine those more complicated
-games. (REMOVE ME)
-
 
 % The chess engine DeepBlue was the first chess engine to win a chess match agains a
 % chess grand master. It's power in the world of chess was a marvel. DeepBlue used tree-

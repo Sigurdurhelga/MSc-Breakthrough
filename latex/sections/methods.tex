@@ -1,25 +1,38 @@
-\chapter{Methods}
+\chapter{Methods\label{cha:methods}}
 
-To train neural networks to play breakthrough we employ a process of self play, where two neural networks are first
-randomly initialized, then they play against each other. They play for $1000$ games, and the neural network that wins
-lets call that one more games is called $m_1$ and the other $M_2$. $M_1$'s weights are then copied to $M_2$. Then $M_1$,
-plays against itself for $20$ iterations recording the outcome of the game. The outcome is compiled to a dataset containing
-four values ($b$, $p$, $v$, $r$). $b$ stands for a gamestate within it's simulation while playing against itself, $p$ stands
-for the policy returned by the neural network by 
+In this chapter we train a neural network to play the game breakthrough described in 
+Chapter \ref{cha:background}. The training process uses MCTS described in Section \ref{sec:mcts} 
+to guide it's training.
 
-\section{Monte Carlo Tree Search}
+The training algorithm is a reinforcement learning based self-play algorithm based on the work 
+done in AlphaZero (CITE ME).
 
+\subsection{Neural network Architecture}
 
+The neural network architecture we opted to use was a single convolutional layer with a ReLU 
+activation function, followed by 5 residual layers, and lastly a split policy/value head.
+A figure describing the architecture can be seen in Figure \ref{fig:nnarch}.
 
-%\section{Machine learning methods}
+\begin{figure}[]
+    \centering
 
-This section discusses the various machine learning methods utilized throughout this project 
-and discusses their applicability.
+    \includegraphics[width=0.65\textwidth]{graphics/test}
+    
+    \caption{Neural Network Architecture}
+    \label{fig:nnarch}
+\end{figure}
 
-%\subsection{Deep neural network}
+\subsection{Self-play}
 
-I'm a little teapot
+To train the neural network to play Breakthrough we initialize two neural networks $N_1$ and $N_2$ 
+with random weights. Then we let $N_1$ play against itself using MCTS to direct its training. 
+While playing against itself the neural network gathers data for it to train with. 
 
-%\subsection{Data joined network}
+The data collected is $(\pi, \tau, p, v)$, where $\pi$ is the action probabilities provided by 
+MCTS for $N$ iterations, $\tau$ is the reward from playing the game, $p$ is the policy vector
+from the neural network, and $v$ is the predicted reward of the game by the neural network.
 
-I'm a smaller teapot
+\subsection{Loss Function}
+
+The data collected is backpropagated through the NN moving the weights to the direction of this 
+loss function $l = p * \pi + (\tau - v)^2$
