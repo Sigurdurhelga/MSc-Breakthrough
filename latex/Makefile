@@ -22,7 +22,7 @@ TEXINPUTS:=".:./sty//:"
 
 # Programs  -- put absolute paths here if you must
 LATEX:=TEXINPUTS=${TEXINPUTS}; export TEXINPUTS; latex
-PDFLATEX:=TEXINPUTS=${TEXINPUTS}; export TEXINPUTS; pdflatex
+PDFLATEX:=TEXINPUTS=${TEXINPUTS}; export TEXINPUTS; latexmk -pdf
 BIBPROG:=bibtex  # can also be bibtex or bibtex8
 
 # ATTENTION!
@@ -40,9 +40,9 @@ all: pdf cleanExtra
 
 pdf:
 	${PDFLATEX} ${TARGET}
-	${BIBPROG}  ${TARGET}
-	${PDFLATEX} ${TARGET}
-	${PDFLATEX} ${TARGET}
+	# ${BIBPROG}  ${TARGET}
+	# ${PDFLATEX} ${TARGET}
+	# ${PDFLATEX} ${TARGET}
 
 # HTML
 html: ${TEXSRC} ${PDFSRC}
