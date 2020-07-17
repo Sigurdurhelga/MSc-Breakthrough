@@ -1,7 +1,7 @@
 \chapter{Background\label{cha:background}}
 
 In this chapter we discuss the algorithms we decided to use, what some other similar 
-methods exsist as well as the field in general.
+methods exist as well as the field in general.
 
 \section{Environments}
 \label{sec:environments}
@@ -28,10 +28,10 @@ CITE AIMABOOK
     \hline
     Static & Static, Semi-Static, Dynamic & ehh  \\
     \hline
-    Discrete & Discrete, Continious & Is your environment discrete w.r.t actions (does it end) \\
+    Discrete & Discrete, Continuous & Is your environment discrete w.r.t actions (does it end) \\
     \hline
   \end{tabular}
-  \caption{Charcteristics of environments}
+  \caption{Characteristics of environments}
   \label{tab:env_characteristics}
 \end{table}
 
@@ -110,7 +110,7 @@ A different heuristic would be the distance of your most advanced pawn minus you
 advanced pawn, this heuristic could give you insight into how close you are to winning the game or 
 how close your opponent is. As a higher level concept we can call this concept your aggressiveness, 
 as it closely resembles how aggressive you are for going in for the win. Generally in Breakthrough 
-it is favourable to move your whole team as a unit and play more defensively, so this heuristic 
+it is favorable to move your whole team as a unit and play more defensively, so this heuristic 
 is probably not one that will lead to the most wins.
 
 \section{State-Space Search}
@@ -119,7 +119,7 @@ Traditionally methods for playing games were searching through the environment u
 guide the search. A simple way of doing a heuristic based search would be to give all states a $0$ 
 as a score and give states where you win a positive score. We say that those search algorithm 
 is not guided, and the algorithm will probably have to evaluate every state in the state-space. 
-This method of searching is generally extremenly inefficient as the state-spaces of game environments 
+This method of searching is generally extremely inefficient as the state-spaces of game environments 
 are generally extremely large, and often infinite. For instance an estimate of the state-space 
 for the game breakthrough is $M * N * 2^{N*4}$ where $M$ is the height of the board $N$ is the width 
 of the board. The $2^{N*4}$ represent each piece either being alive or captured. So for a small board
@@ -135,7 +135,7 @@ More modernly these search methods have been amplified by Machine Learning, in s
 we do not need to figure out a good heuristic for a given state, but rather, we apply a machine 
 learning model to learn a function that takes in a state and returns an evaluation of that state.
 This can lead to a significant time reduction as we do not need to simulate a whole game from a 
-state to recieve its evaluation we rather receive the evaluation from the model.
+state to receive its evaluation we rather receive the evaluation from the model.
 
 \subsection{Monte-Carlo Tree Search}
 
@@ -147,8 +147,8 @@ state-action pair what is meant it is some state and the action that brought the
 that state. This pair should be unique within the environment. We will discuss these concepts within game-environments
 and therefore we might say player instead of agent and game instead of environment.
 
-MCTS is a method of exploring an enviroment in a randomized manner (Monte Carlo is the term implying
-randomness). In MCTS there are four stages. Selection, Expansion, Simulation, and Backpropagation. They happen sequentially
+MCTS is a method of exploring an environment in a randomized manner (Monte Carlo is the term implying
+randomness). In MCTS there are four stages. Selection, Expansion, Simulation, and Back-propagation. They happen sequentially
 and repeatedly. MCTS is initialized with a tree consisting of the unexpanded initial state of the environment.
 
 In MCTS there is a tree representing the game-environment. This tree consists of nodes $n_i$ where $i$ represents the point in time
@@ -207,20 +207,28 @@ the neural network is used instead.
 
 \section{Machine Learning}
 
-Machine learning (ML) focuses on the using of data and a corresponding outcome w.r.t that data to 
-extrapolate some underlying function of that data. This some task like predicting the 
-rise and fall of some stock, what the weather will be in a week, and whether an image 
-is an image of a dog or a cat. Many datastructures and algorithms are used to achieve this 
-goal, but recently the field of ANN/DNN's has been the standard for achieveing the best
-results.
+Machine Learning (ML) is a research field in which machines apply statistical functions on data to achieve the output that is \textit{correct}, by correct we mean the corresponding result which we expect. Generally this a repetitive process where we look at examples of the data, and the algorithm progressively gets closer to the underlying function of the data it is fed. This process is therefore similar to trial and error for humans. ML is a sub-field of Artificial Intelligence. ML algorithms come in the form of two classes \textit{Classification}, where the algorithm should find a class representing the data its given, and \textit{Regression} where the algorithm should find an underlying continuous numerical function and will return a numerical value representing the input. 
+
+Typically ML can be viewed in three different groups, Supervised Learning, Reinforcement Learning (RL), and Unsupervised Learning. Where in Supervised Learning, the algorithm is given data examples and their corresponding outcome. For example, a supervised learning algorithm could be provided with data regarding the weather and the corresponding temperature, the algorithm should then find a pattern within the weather data and find the continuous function represented by the data. This would then be an example of a regression task. Flipping thing example around, if the algorithm would just be provided the temperature and it should tell us whether it is sunny outside or not, that would be a classification task.
+
+In RL the algorithm is given only some input, and then the algorithm tries some outcome generally actions in some environment. Then over an episode~\footnote{a series of outcomes / a timespan} once the episode is finished some reward is given. The algorithm will then learn whether the actions were good actions from the reward. Examples of this are agents playing a game like Flappy Bird, where the data they are given is the state of the game, and they try to either jump or not jump.
+
+%Machine learning (ML) focuses on the using of data and a corresponding outcome w.r.t that data to 
+%extrapolate some underlying function of that data. Examples of how we use machine learning is for instance the ability to predicting the 
+%rise and fall of some stock, predicting what the weather will be in a week, and whether an image 
+%is an image of a dog or a cat. Many data structures and algorithms are used to achieve this 
+%goal, but recently the field of ANN/DNN's has been the standard for achieving the best
+%results.
+
+%As a general notion we can split machine learning into three different sects those are Supervised Learning, Reinforcement Learning, and Unsupervised Learning.
+
+\subsection{Supervised Learning}
+
+In supervised learning, the data and their corresponding outcomes are already available to us. Examples of the data we can use in supervised learning would be labeled images.
 
 \subsection{Reinforcement Learning}
 
-Reinforcement Learning is a subfield of Machine Learning where a model learns from experience.
-That is, the notion of input/output values changes, the model uses itself to generate input
-values by acting in an environment. The environment then returns some result, that could be
-losing in a game, making a correct prediction, or any number of outcomes. The result is then
-propagated through the model allowing it to improve with this new information.
+Reinforcement Learning is where a model learns from experience. That is, the notion of input/output values changes, the model uses itself to generate input values by acting in an environment. The environment then returns some result, that could be losing in a game, making a correct prediction, or any number of outcomes. The result is then propagated through the model allowing it to improve with this new information.
 % When doing moving it's parameters in the direction of the recieved output
 % from the environment.
 
@@ -229,7 +237,7 @@ and many others.
 
 \subsection{Neural Networks}
 
-Neural networks (NN) are popular methods within a subfield of ML which is called Deep Learning (DL). 
+Neural networks (NN) are popular methods within a sub-field of ML which is called Deep Learning (DL). 
 NN's are created to resemble how the human brain functions. In the brain we have neurons which 
 when they get a signal they apply some function to them and if the resulting signal is high 
 enough, they fire to the next neuron. This is how it is done in the neural network model as well.

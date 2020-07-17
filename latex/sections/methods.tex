@@ -33,10 +33,11 @@ with random weights. Then we let $N_1$ play against itself using MCTS to direct 
 While playing against itself the neural network gathers data for it to train with. 
 
 The data collected is $(\pi, \tau, p, v)$, where $\pi$ is the action probabilities provided by 
-MCTS for $N$ iterations, $\tau$ is the reward from playing the game, $p$ is the policy vector
+MCTS for $N$ iterations, $\tau$ is the reward for the whole episode, $1$ if white wins,
+$-1$ if black wins, and $0$ on a tied game, $p$ is the policy vector
 from the neural network, and $v$ is the predicted reward of the game by the neural network.
 
 \subsection{Loss Function}
 
-The data collected is back-propagated through the NN moving the weights to the direction of this 
-loss function $l = p * \pi + (\tau - v)^2$
+The data collected is backpropagated through the NN moving the weights to the direction of this 
+loss function $l = (p * \pi) + (\tau - v)^2$ for each state the NN encountered during self-play.
