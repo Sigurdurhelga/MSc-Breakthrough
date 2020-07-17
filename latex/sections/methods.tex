@@ -22,6 +22,10 @@ A figure describing the architecture can be seen in Figure \ref{fig:nnarch}.
     \label{fig:nnarch}
 \end{figure}
 
+\subsection{Policy head}
+
+The policy head of the neural network returns a vector of the size of the action space $w * h * 6$ where $w$ is the width of the board $h$ is the height of the board and $6$ represents the six cardinal direction pawns can move in the space (diagonally both directions, forward and backwards). The vector is then masked s.t. the values representing moves that can not be played on the board are given the value of $0$.
+
 \subsection{Self-play}
 
 To train the neural network to play Breakthrough we initialize two neural networks $N_1$ and $N_2$ 
@@ -34,5 +38,5 @@ from the neural network, and $v$ is the predicted reward of the game by the neur
 
 \subsection{Loss Function}
 
-The data collected is backpropagated through the NN moving the weights to the direction of this 
+The data collected is back-propagated through the NN moving the weights to the direction of this 
 loss function $l = p * \pi + (\tau - v)^2$
