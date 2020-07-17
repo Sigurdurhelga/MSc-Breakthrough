@@ -20,7 +20,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
   neural_network_1 = BreakthroughNN(state_example.cols, state_example.rows, state_example.get_move_amount())
   neural_network_2 = BreakthroughNN(state_example.cols, state_example.rows, state_example.get_move_amount())
 
-  test_as_white = True
+  test_as_white = False
 
   if test_as_white:
     neural_network_1.loadmodel(first_network_path, first_network_name)
@@ -30,7 +30,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
   memo_nn1 = {}
   memo_nn2 = {}
 
-  NN_THINK = 50
+  NN_THINK = 1
 
   initial_node = Node(state_example.initial_state(), "START")
   first_win = 0
@@ -47,12 +47,20 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
 
         # WHITE MOVES
         pi = monte_tree_1.get_policy(curr_node, NN_THINK, neural_network_1)
+        
+        if not curr_node.is_expanded():
+          curr_node.expand()
+
+        pi,v = neural_network_1.safe_predict(curr_node.gamestate)
+        pi = pi.view(-1)
 
         for i,child in enumerate(curr_node.children):
           if not child:
             pi[i] = 0
-        pi = pi / sum(pi)
+        pi = pi / sum(pi).item()
 
+        print("policy:",pi)
+        print(sum(pi))
         curr_node = np.random.choice(curr_node.children, p=pi)
 
         if curr_node.gamestate.is_terminal():
@@ -62,11 +70,17 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
 
         # BLACK MOVES
         pi = monte_tree_2.get_policy(curr_node, NN_THINK, neural_network_2)
+        if not curr_node.is_expanded():
+          curr_node.expand()
+        pi,v = neural_network_2.safe_predict(curr_node.gamestate)
+        pi = pi.view(-1)
 
         for i,child in enumerate(curr_node.children):
           if not child:
             pi[i] = 0
-        pi = pi / sum(pi)
+        pi = pi / sum(pi).item()
+        print("policy:",pi)
+        print(sum(pi).item())
 
         curr_node = np.random.choice(curr_node.children, p=pi)
 
@@ -87,4 +101,4 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
       print("Bestnetwork {} random {} winrate {}".format(second_win, first_win, second_win / total_games))
 
 network_path = "./trained_models"
-selfplay(network_path,"gen_54_network.tar", network_path, "random.tar",initial_state)
+selfplay(network_path,"test_network.tar", network_path, "random.tar",initial_state)
