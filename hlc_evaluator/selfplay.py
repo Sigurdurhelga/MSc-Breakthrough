@@ -2,7 +2,7 @@ from monte_carlo.mcts import MCTS
 from monte_carlo.mctsnode import Node
 from game_environments.play_chess.playchess import PlayChess
 from game_environments.breakthrough.breakthrough import BTBoard, config as BTconfig
-
+from pprint import pprint
 from collections import namedtuple
 import numpy as np
 from tqdm import tqdm
@@ -11,11 +11,13 @@ from datetime import time
 
 
 GAME = {
-    "breakthrough": BTBoard(np.zeros([7,6]), 1),
+    "breakthrough": BTBoard(np.zeros([6,6]), 1),
 }
 
 selected_game = GAME["breakthrough"]
 initial_state = selected_game.initial_state()
+
+testerino = Node(selected_game.initial_state(),"START")
 
 
 whiteplayer = None
@@ -29,86 +31,47 @@ def play_game(white_think, black_think, verbose=False):
     black_think reference the amount of mcts rollout
     each player does
     """
-    # print("playgame started with {} {}".format(white_think, black_think))
-    # initial node (root)
     curr_node = Node(selected_game.initial_state(), "START")
-    if whiteplayer:
-        whiteplayer.set_node(curr_node)
-        blackplayer.set_node(curr_node)
-    else:
-        whiteplayer = MCTS(curr_node)
+
+    whiteplayer = MCTS()
+    blackplayer = MCTS()
+
 
     while True:
-        if verbose:
-            print("===================")
-            whiteplayer.root.gamestate.print_board()
-        # selection / expantion / rollout
-        whiteplayer.rollout(white_think)
-        # greedy select best
-        whiteplayer.move_to_best_child()
-        curr_node = whiteplayer.root
+        for _ in range(white_think):
+            whiteplayer.rollout(curr_node)
 
-        if verbose:
-            print("did action: ",whiteplayer.root.action)
-            whiteplayer.root.gamestate.print_board()
-            print("===================")
-        if whiteplayer.root.gamestate.is_terminal():
+        curr_node = whiteplayer.get_best_child(curr_node)
+
+        if curr_node.gamestate.is_terminal():
             break
 
-        if not blackplayer:
-            blackplayer = MCTS(Node(whiteplayer.root.gamestate, whiteplayer.root.action))
-        else:
-            blackplayer.move_to_child(whiteplayer.root.action)
+        # print("blackplayer Q for currnode before rollout:",blackplayer.Qs[curr_node])
+        for _ in range(black_think):
+            blackplayer.rollout(curr_node)
+            # print("blackplayer Q for currnode after rollout:",blackplayer.Qs[curr_node])
+        curr_node = blackplayer.get_best_child(curr_node)
 
-        if verbose:
-            print("===================")
-            blackplayer.root.gamestate.print_board()
-
-        # selection / expantion / rollout
-        blackplayer.rollout(black_think)
-        # greedy select best
-        blackplayer.move_to_best_child()
-        curr_node = blackplayer.root
-
-        if verbose:
-            print("did action: ",blackplayer.root.action)
-            blackplayer.root.gamestate.print_board()
-            print("===================")
-        if blackplayer.root.gamestate.is_terminal():
+        if curr_node.gamestate.is_terminal():
             break
 
-        whiteplayer.move_to_child(blackplayer.root.action)
+    print("endgame")
+    curr_node.gamestate.print_board()
+
     return curr_node.gamestate.reward()
 
 results_start = {
     "black": 0,
     "white": 0,
-    "tie": 0,
 }
-total_results = {}
 
-for i in tqdm(range(1,10)):
-    results = results_start.copy()
-    for _ in tqdm(range(10)):
-        winner = play_game(20,5)
-        if winner == 0:
-            results["tie"] += 1
-        elif winner == 1:
-            results["white"] += 1
-        else:
-            results["black"] += 1
-    total_results[f"1.{i}"] = results
+whitewins = 0
+blackwins = 0
 
-for i in tqdm(range(1,10)):
-    results = results_start.copy()
-    for _ in tqdm(range(10)):
-        winner = play_game(50,5)
-        if winner == 0:
-            results["tie"] += 1
-        elif winner == 1:
-            results["white"] += 1
-        else:
-            results["black"] += 1
-    total_results[f"2.{i}"] = results
-with open("res.json", "w") as f:
-    f.write(json.dumps(total_results))
+for _ in tqdm(range(100)):
+    winner = play_game(100,30)
+    if winner == 1:
+        whitewins += 1
+    else:
+        blackwins += 1
+    print("White {} - black {}".format(whitewins, blackwins))

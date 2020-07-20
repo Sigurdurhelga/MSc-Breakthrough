@@ -32,15 +32,18 @@ class Node():
     y1,x1,y2,x2 = self.action
     direction = 0 if y1 < y2 else 3
     direction += 0 if x1 > x2 else 1 if x1 == x2 else 2
-    # the 6 here is breakthrough specific make a method (width * height * z) + (width * y) + x
+
     return (self.gamestate.rows * self.gamestate.cols * direction) + (self.gamestate.cols * y2) + x2
 
   def is_expanded(self) -> bool:
     return self.expanded
 
   def __hash__(self) -> int:
-    return hash(self.gamestate)+hash(self.action)
+    return hash(self.gamestate)
 
   def __eq__(self, other) -> bool:
+    return str(self.gamestate) == str(other.gamestate)
+
+  def __ne__(self,other) -> bool:
     return str(self.gamestate) == str(other.gamestate)
 

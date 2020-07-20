@@ -1,0 +1,19 @@
+
+
+{% macro construct_breakthrough(width,height) %}
+
+<div id="breakthrough-board">
+    {% for y in range(height) %}
+    <div class="breakthrough-row">
+        {% for x in range(width) %}
+
+        <div class="breakthrough-cell" id="x{{x}}y{{y}}">
+        </div>
+
+        {% endfor %}
+    </div>
+
+    {% endfor %}
+</div>
+
+{% endmacro %}

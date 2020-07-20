@@ -29,6 +29,7 @@ class BTBoard(GameNode):
         self.player = player
         self.legal_moves_helper()
         self.terminal = self.is_terminal_helper()
+        self.stringified = ""
         if self.terminal:
             self.legal_moves = []
 
@@ -83,7 +84,8 @@ class BTBoard(GameNode):
             return -1
         if any(x == config.WHITE for x in self.board[0,:]):
             return 1
-        return 0
+
+        return 0 - (self.player)
 
     def is_terminal_helper(self) -> bool:
         return any(x == config.BLACK for x in self.board[-1,:]) \
@@ -102,14 +104,15 @@ class BTBoard(GameNode):
             - Returns an encoded version of the BTBoard, this encoded
               version will be run through NeuralNetworks
         """
-        enc_board = np.zeros([self.rows+1, self.cols, 6])
-        for m in self.legal_moves:
-            y1,x1,y2,x2 = m
-            direction = 0 if y1 < y2 else 3
-            direction += 0 if x1 > x2 else 1 if x1 == x2 else 2
-            enc_board[y1,x1,direction] = 1
-
-        enc_board[self.rows,:,:] = 1 if self.player == config.WHITE else 0
+        enc_board = np.zeros([3,self.rows, self.cols])
+        for y in range(self.rows):
+            for x in range(self.cols):
+                if self.board[y,x] == config.WHITE:
+                    enc_board[0,y,x] = 1
+                elif self.board[y,x] == config.BLACK:
+                    enc_board[1,y,x] = 1
+        if self.player == config.WHITE:
+            enc_board[2,:,:] = 1
         return enc_board
 
     def print_board(self):
@@ -219,12 +222,17 @@ class BTBoard(GameNode):
         return np.copy(self.board)
 
     def __str__(self) -> str:
-        return "|".join(["".join(["w" if c == config.WHITE else "b" if c == config.BLACK else " " for c in row]) for row in self.board])+"|{}".format(self.player)
+        if self.stringified == "":
+            self.stringified = "|".join(["".join(["w" if c == config.WHITE else "b" if c == config.BLACK else " " for c in row]) for row in self.board])+"|{}".format(self.player)
+        return self.stringified
 
     def __hash__(self) -> int:
         return str.__hash__(self.__str__())
 
     def __eq__(self, other) -> bool:
-        return self.board == other.board
+        return self.__str__() == other.__str__()
+
+    def __ne__(self,other) -> bool:
+        return self.__str__() != other.__str__()
 
 
