@@ -1,0 +1,144 @@
+{% extends "layout.html" %} {% block content %} {% from 'macros.html' import
+construct_breakthrough %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-12 main-container">
+      {{ construct_breakthrough(6,6) }}
+      <div class="btn-group" role="group" aria-label="Basic example">
+        <button type="button" id="request-board" class="btn btn-primary">New Board</button>
+      </div>
+      <div class="col-sm-12">
+        <h3 id="game-info"></h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function() {
+    let curr_board;
+    let curr_selected_cell;
+    let white_playing = true;
+    let is_terminal = false;
+    const game_info = $("#game-info");
+
+    function get_new_board(){
+      $.ajax({
+        type: "GET",
+        url: '{{url_for("get_board")}}'
+      }).done(res => {
+        curr_board = res;
+        white_playing = true;
+        render_board();
+        render_game_info();
+      });
+    }
+
+    get_new_board();
+
+    function render_game_info(){
+      if(!is_terminal){
+        game_info.text(`Current player is ${white_playing ? "white" : "black"}`)
+      } else {
+        game_info.text(`Winning player is ${white_playing ? "Black" : "White"}`)
+      }
+    }
+
+    function render_board(){
+        for(let y = 0; y < 6; y++){
+          for(let x = 0; x < 6; x++){
+            key = `x${x}y${y}`;
+            if(curr_board[key] == 1){
+              $('#'+key).css('background-image', "url({{black}}");
+            } else if (curr_board[key] == -1) {
+              $('#'+key).css('background-image', "url({{white}})");
+            }
+          }
+        }
+    }
+
+    $("#request-board").click(function(e) {
+      e.preventDefault();
+      $.ajax({
+        type: "GET",
+        url: '{{url_for("get_board")}}'
+      }).done(res => {
+        curr_board = res;
+        white_playing = true;
+        render_board();
+        render_game_info();
+      });
+    });
+
+    function select_cell(clicked){
+      clear_colors();
+        curr_selected_cell = clicked;
+        curr_selected_cell.css("background-color", "LightBlue");
+        let moves = curr_board[`m${curr_selected_cell.attr('id')}`];
+        if(moves){
+          moves.forEach(element => {
+            $(`#${element}`).css('background-color', 'LightPink');
+          });
+        }
+    }
+
+    function clear_colors(){
+      $('.breakthrough-cell').css('background-color', '');
+    }
+
+    $(".breakthrough-cell").click(async function(e) {
+      e.preventDefault();
+      let clicked = $(this);
+      if(!curr_selected_cell){
+        select_cell(clicked);
+      } else {
+        // checking if its a valid move
+        let valid_move = false;
+        let available;
+        let moves = curr_board[`m${curr_selected_cell.attr('id')}`];
+        if(moves){
+          moves.forEach(element => {
+            available = $(`#${element}`);
+            if(available[0] == this){
+              valid_move = true;
+            }
+          });
+        }
+        if(!valid_move){
+          select_cell(clicked)
+        } else {
+          const data = {
+            'from': curr_selected_cell.attr('id'),
+            'to': clicked.attr('id')
+          };
+          const response = await fetch('http://localhost:5000/post_move', {
+            method: 'POST', // *GET, POST, PUT, DELETE, etc.
+            mode: 'cors', // no-cors, *cors, same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: 'same-origin', // include, *same-origin, omit
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data) // body data type must match "Content-Type" header
+          });
+          let resp = await response.json();
+          if(resp.valid){
+            clicked.css('background-image', curr_selected_cell.css('background-image'))
+            curr_selected_cell.css("background-image", '');
+            curr_board = resp;
+            white_playing = !white_playing;
+            is_terminal = curr_board['terminal'];
+            render_game_info();
+          } else {
+            // here js valid move worked but not on the backend
+            select_cell(clicked);
+          }
+          clear_colors();
+        }
+
+      }
+    })
+
+  });
+</script>
+{% endblock %}
