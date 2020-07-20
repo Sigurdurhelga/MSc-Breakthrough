@@ -27,6 +27,7 @@ class BTBoard(GameNode):
         self.rows = len(board_list)
         self.cols = len(board_list[0])
         self.player = player
+        self.legal_moves = []
         self.legal_moves_helper()
         self.terminal = self.is_terminal_helper()
         self.stringified = ""
@@ -34,7 +35,7 @@ class BTBoard(GameNode):
             self.legal_moves = []
 
 
-    def legal_moves_helper(self) -> list:
+    def legal_moves_helper(self):
         """
         Legal_moves()
             - sets self.legal_moves to a list of legal moves for the BTBoard
@@ -45,16 +46,17 @@ class BTBoard(GameNode):
         moves = []
         for y in range(self.rows):
             for x in range(self.cols):
-                if self.board[y][x] != self.player:
+                if self.board[y][x] != d:
                     continue
-                if y + d >= self.rows or y + d < 0:
+                elif y + d >= self.rows or y + d < 0:
                     continue
-                if x > 0:
-                    if self.board[y+d][x-1] != self.player:
-                        moves.append((y,x,y+d,x-1))
-                if x < self.cols-1:
-                    if self.board[y+d][x+1] != self.player:
-                        moves.append((y,x,y+d,x+1))
+                # move to the left
+                if x > 0 and self.board[y+d][x-1] != d:
+                    moves.append((y,x,y+d,x-1))
+                # move to the right
+                if x < self.cols-1 and self.board[y+d][x+1] != d:
+                    moves.append((y,x,y+d,x+1))
+                # move straight
                 if self.board[y+d][x] == config.EMPTY:
                     moves.append((y,x,y+d,x))
         self.legal_moves = moves

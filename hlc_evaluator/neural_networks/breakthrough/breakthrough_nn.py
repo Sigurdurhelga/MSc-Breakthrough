@@ -19,6 +19,8 @@ config = config_neuralnet(0.01,
                           torch.cuda.is_available(),
                           10)
 
+DEVICE = torch.device('cuda:0') if config.cuda else torch.device('cpu')
+
 class BoardData(Dataset):
   def __init__(self, dataset):
     # super(BoardData, self).__init__()
@@ -76,7 +78,10 @@ class BreakthroughNN(NNBase):
   def train(self, dataset):
     criterion = AlphaLoss()
     dataset = BoardData(dataset)
-    train_data = DataLoader(dataset, batch_size=config.batch_size, shuffle=False, pin_memory=config.cuda)
+    workers = 1
+    if config.cuda:
+      workers = 4
+    train_data = DataLoader(dataset, batch_size=config.batch_size, num_workers=workers, shuffle=False, pin_memory=config.cuda)
     losses = []
     for epoch in range(config.epochs):
       total_loss = 0

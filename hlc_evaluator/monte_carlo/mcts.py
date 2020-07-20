@@ -108,10 +108,10 @@ class MCTS():
       self.Ns[state] = [0] * state.gamestate.get_move_amount()
       policy, value = neural_network.safe_predict(state.gamestate)
       policy = policy.detach().cpu().numpy().reshape(-1)
-      value = value.detach().cpu().item()
+      value = value.detach().item()
+      if state.gamestate.player == 1:
+        value = -value
       self.Ps[state] = (policy,value)
-      # if state.gamestate.player == 1:
-        # value = -value
       return -value
     else:
       policy,value = self.Ps[state]
