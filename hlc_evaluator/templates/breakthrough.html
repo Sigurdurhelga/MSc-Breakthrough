@@ -6,7 +6,10 @@ construct_breakthrough %}
       {{ construct_breakthrough(6,6) }}
       <div class="btn-group" role="group" aria-label="Basic example">
         <button type="button" id="request-board" class="btn btn-primary">New Board</button>
+        <button type="button" id="play-against-ai" class="btn btn-success">Play against AI</button>
+        <button type="button" id="ai-autoplay" class="btn btn-warning">AI vs AI</button>
       </div>
+      <input type="number" id="think-number" placeholder="AI Think (default=10)">
       <div class="col-sm-12">
         <h3 id="game-info"></h3>
       </div>
@@ -21,6 +24,11 @@ construct_breakthrough %}
     let white_playing = true;
     let is_terminal = false;
     const game_info = $("#game-info");
+    let in_autoplay = false;
+    let playing_against_ai = true;
+    const autoplay_button = $("#ai-autoplay");
+    const play_against_ai_button = $("#play-against-ai");
+    const ai_think = $("#think-number");
 
     function get_new_board(){
       $.ajax({
@@ -29,6 +37,10 @@ construct_breakthrough %}
       }).done(res => {
         curr_board = res;
         white_playing = true;
+        is_terminal =false
+        in_autoplay = false
+        autoplay_button.removeClass('active');
+        play_against_ai_button.addClass('active');
         render_board();
         render_game_info();
       });
@@ -40,7 +52,7 @@ construct_breakthrough %}
       if(!is_terminal){
         game_info.text(`Current player is ${white_playing ? "white" : "black"}`)
       } else {
-        game_info.text(`Winning player is ${white_playing ? "Black" : "White"}`)
+        game_info.text(`📣 Winning player is ${white_playing ? "Black" : "White"} 📣`)
       }
     }
 
@@ -52,6 +64,8 @@ construct_breakthrough %}
               $('#'+key).css('background-image', "url({{black}}");
             } else if (curr_board[key] == -1) {
               $('#'+key).css('background-image', "url({{white}})");
+            } else {
+              $('#'+key).css('background-image', "");
             }
           }
         }
@@ -59,15 +73,47 @@ construct_breakthrough %}
 
     $("#request-board").click(function(e) {
       e.preventDefault();
-      $.ajax({
-        type: "GET",
-        url: '{{url_for("get_board")}}'
-      }).done(res => {
-        curr_board = res;
-        white_playing = true;
-        render_board();
-        render_game_info();
+      get_new_board();
+    });
+
+    async function get_ai_move(){
+      if(is_terminal) return;
+      
+      let think = ai_think.val() || 10;
+      let url = '{{url_for("get_ai_move")}}'
+      url += `?think=${think}`
+      const response = await fetch(url, {
+        method: 'GET', // *GET, POST, PUT, DELETE, etc.
       });
+      let resp = await response.json();
+      curr_board = resp;
+      const from = `#${resp.from}`;
+      const to = `#${resp.to}`;
+      $(to).css('background-image', $(from).css('background-image'))
+      $(from).css("background-image", '');
+      white_playing = !white_playing;
+      is_terminal = curr_board['terminal'];
+      render_game_info();
+      return;
+    }
+
+    play_against_ai_button.click(function(e) {
+      e.preventDefault();
+      play_against_ai_button.button('toggle');
+      playing_against_ai = !playing_against_ai;
+    });
+
+
+    $('#ai-autoplay').click(async function(e){
+        in_autoplay = !in_autoplay;
+        if(in_autoplay){
+          autoplay_button.addClass('active');
+          while(in_autoplay && !is_terminal){
+            await get_ai_move();
+          }
+        } else {
+          autoplay_button.removeClass('active');
+        }
     });
 
     function select_cell(clicked){
@@ -111,11 +157,8 @@ construct_breakthrough %}
             'from': curr_selected_cell.attr('id'),
             'to': clicked.attr('id')
           };
-          const response = await fetch('http://localhost:5000/post_move', {
+          const response = await fetch('{{url_for("post_move")}}', {
             method: 'POST', // *GET, POST, PUT, DELETE, etc.
-            mode: 'cors', // no-cors, *cors, same-origin
-            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: 'same-origin', // include, *same-origin, omit
             headers: {
               'Content-Type': 'application/json'
             },
@@ -129,6 +172,10 @@ construct_breakthrough %}
             white_playing = !white_playing;
             is_terminal = curr_board['terminal'];
             render_game_info();
+            console.log("should ai do a move",playing_against_ai)
+            if(playing_against_ai){
+              get_ai_move();
+            }
           } else {
             // here js valid move worked but not on the backend
             select_cell(clicked);

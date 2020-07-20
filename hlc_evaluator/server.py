@@ -3,6 +3,12 @@ from flask_cors import CORS
 import numpy as np
 from game_environments.breakthrough.breakthrough import BTBoard
 
+from monte_carlo.mcts import MCTS
+from monte_carlo.mctsnode import Node
+# from game_environments.play_chess.playchess import PlayChess
+from game_environments.gamenode import GameNode
+from neural_networks.breakthrough.breakthrough_nn import BreakthroughNN
+
 import json
 
 app = Flask(__name__, static_folder='static')
@@ -14,7 +20,7 @@ def home():
     return render_template('home.html')
 """
 
-working_board = BTBoard(np.zeros([6,6]), 1).initial_state()
+working_board = Node(BTBoard(np.zeros([6,6]), 1).initial_state(),"START")
 
 def board_to_jsonifyable(bt_board):
     board_dict = {}
@@ -42,8 +48,8 @@ def breakthrough():
 @app.route('/get_board', methods=['GET'])
 def get_board():
     global working_board
-    working_board = working_board.initial_state()
-    to_ret = board_to_jsonifyable(working_board)
+    working_board = Node(working_board.gamestate.initial_state(),"START")
+    to_ret = board_to_jsonifyable(working_board.gamestate)
     return jsonify(to_ret)
 
 @app.route('/post_move', methods=['POST'])
@@ -53,14 +59,43 @@ def post_move():
     y1,x1 = int(data['from'][3]), int(data['from'][1])
     y2,x2 = int(data['to'][3]) , int(data['to'][1])
     move = (y1,x1,y2,x2)
-    if move in working_board.legal_moves:
-        working_board = working_board.execute_move(move)
-        to_ret = board_to_jsonifyable(working_board)
+    if move in working_board.gamestate.legal_moves:
+        working_board = Node(working_board.gamestate.execute_move(move),move)
+        to_ret = board_to_jsonifyable(working_board.gamestate)
         to_ret['valid'] = True
-        to_ret['terminal'] = working_board.is_terminal()
+        to_ret['terminal'] = working_board.gamestate.is_terminal()
         return jsonify(to_ret)
     else:
         return jsonify({"valid":False})
+
+neural_network = BreakthroughNN(working_board.gamestate.cols, working_board.gamestate.rows, working_board.gamestate.get_move_amount())
+neural_network.loadmodel('./trained_models', 'gen_223.tar')
+
+@app.route('/get_ai_move', methods=['GET'])
+def get_ai_move():
+    global neural_network, working_board
+    think = request.args.get('think', default=10, type=int)
+    print("thinking for ",think)
+    monte_tree = MCTS()
+    pi = monte_tree.get_policy(working_board, think, neural_network)
+
+    for i,child in enumerate(working_board.children):
+        if not child:
+            pi[i] = 0
+    pi = pi / sum(pi)
+
+    working_board = np.random.choice(working_board.children, p=pi)
+
+    y1,x1,y2,x2 = working_board.action
+    to_ret = board_to_jsonifyable(working_board.gamestate)
+    to_ret['from'] = f'x{x1}y{y1}'
+    to_ret['to'] = f'x{x2}y{y2}'
+    to_ret['terminal'] = working_board.gamestate.is_terminal()
+
+    return jsonify(to_ret)
+
+    
+
 
 
 if __name__ == '__main__':
