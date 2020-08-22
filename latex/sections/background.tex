@@ -1,6 +1,6 @@
 \chapter{Background\label{cha:background}}
 
-In this chapter we discuss the algorithms we decided to use, what some other similar 
+In this chapter we discuss traditional artificial intelligence in the context of search the algorithms we used, what some other similar 
 methods exist as well as the field in general.
 
 \section{Environments}
@@ -51,7 +51,6 @@ simulation is possibly safer than one who is not.
 
 \section{Breakthrough}
 
-
 The game breakthrough is a simplified version of chess, the game is set up on an $MxN$ board with 
 cells like in chess, and each player starts with two rows of pawns at either end. The objective of the 
 game is to move one of the pawn pieces to the opposite end of the board. A player wins if 
@@ -86,8 +85,8 @@ pieces are always able to move. An example of an initial board in breakthrough c
 \end{table}
 
 Categorizing Breakthrough with the characteristics described in Section \ref{sec:environments}. We end up with the description 
-shown in Table \ref{tab:breakthrough_cat}. This description is identical to that of Tic-Tac-Toe, and Chess.
-This description is the most common in board games where two player compete. 
+shown in Table \ref{tab:breakthrough_cat}. These characteristics are identical to that of Tic-Tac-Toe, and Chess.
+This categorization is the most common in board games where two player compete. 
 
 \subsection{Heuristics of Breakthrough}
 
@@ -110,7 +109,7 @@ A different heuristic would be the distance of your most advanced pawn minus you
 advanced pawn, this heuristic could give you insight into how close you are to winning the game or 
 how close your opponent is. As a higher level concept we can call this concept your aggressiveness, 
 as it closely resembles how aggressive you are for going in for the win. Generally in Breakthrough 
-it is favorable to move your whole team as a unit and play more defensively, so this heuristic 
+it is favorable to move your whole team as a unit and play more defensively (CITE UNITY HEURISTIC), so this heuristic 
 is probably not one that will lead to the most wins.
 
 \section{State-Space Search}
@@ -120,7 +119,7 @@ guide the search. A simple way of doing a heuristic based search would be to giv
 as a score and give states where you win a positive score. We say that those search algorithm 
 is not guided, and the algorithm will probably have to evaluate every state in the state-space. 
 This method of searching is generally extremely inefficient as the state-spaces of game environments 
-are generally extremely large, and often infinite. For instance an estimate of the state-space 
+are often extremely large, and sometimes infinite. For instance an estimate of the state-space 
 for the game breakthrough is $M * N * 2^{N*4}$ where $M$ is the height of the board $N$ is the width 
 of the board. The $2^{N*4}$ represent each piece either being alive or captured. So for a small board
 $5x4$ the estimated state-space is $1310720$ many states.
@@ -129,7 +128,7 @@ This is why a good heuristic is very valuable because we can disregard all state
 result from doing a move $a$ in state $S$ as they will only lead to worse outcomes.
 
 The algorithms that are used in traditional state-space search are for instance Depth-first search (DFS),
-Breadth-first Search (BFS), Alpha* Search (A-Star), and Monte-Carlo Tree Search (MCTS).
+Breadth-first Search (BFS), Alpha-Beta Pruning Search (AB-Search), and Monte-Carlo Tree Search (MCTS).
 
 More modernly these search methods have been amplified by Machine Learning, in such a way that 
 we do not need to figure out a good heuristic for a given state, but rather, we apply a machine 
