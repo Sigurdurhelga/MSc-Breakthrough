@@ -55,6 +55,9 @@ class BreakthroughNN(NNBase):
   def forward_1(self, example):
     return self.neural_network.forward_1(example)
 
+  def forward(self, example):
+    return self.forward_1(self.forward_0(example))
+
 
   def predict(self, example):
     if type(example) != np.ndarray:

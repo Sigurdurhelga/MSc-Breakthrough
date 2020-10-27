@@ -17,6 +17,7 @@ from neural_networks.breakthrough.breakthrough_nn import BreakthroughNN
 
 import numpy as np
 from tqdm import tqdm
+import torch
 
 
 GAME = {
@@ -34,9 +35,10 @@ EPISODE_AMOUNT = 2
 NEURAL_NETWORK_THINK = 100
 TEMP_THRESHOLD = 10000
 TRAINING_ITERS = 10
-VERIFICATION_GAMES = 10
+VERIFICATION_GAMES = 20
+CUDA = torch.cuda.is_available()
+ITERATION = 69
 
-ITERATION = 0
 
 def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_monte_tree=None, verbose=False):
   global ITERATION
@@ -74,36 +76,6 @@ def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_
 
   for i in range(len(dataset)-1):
     dataset[i+1][2] = reward
-  # print("[TRAINING] datapoints gathered amount: {}".format(len(dataset)))
-  monte_tree = MCTS()
-
-  curr_node = Node(game_example.initial_state(), "START")
-  # secondly generate dataset from blacks point of view
-  black_dataset = []
-  while not curr_node.gamestate.is_terminal():
-
-    # NNpolicy based select select best
-    if temp < 0.1:
-      temp = 0
-
-    pi = monte_tree.get_policy(curr_node,NEURAL_NETWORK_THINK,primary_nn,temp)
-    for i,child in enumerate(curr_node.children):
-      if not child:
-        pi[i] = 0
-    pi = pi / sum(pi)
-
-    datapoint = [curr_node.gamestate.encode_state(), pi, 0]
-    black_dataset.append(datapoint)
-
-    curr_node = np.random.choice(curr_node.children, p=pi)
-
-  reward = curr_node.gamestate.reward()
-  print("[generating dataset] playing as black reward {}".format(reward))
-
-  for i in range(len(black_dataset)-1):
-    black_dataset[i+1][2] = reward
-
-  dataset.extend(black_dataset)
 
   return dataset
 
@@ -126,7 +98,8 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
 
   initial_node = Node(state_example.initial_state(), "START")
 
-  generation = 1
+  generation =  70
+
 
   while True:
     ITERATION += 1
@@ -140,13 +113,40 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
         monte_tree_2 = MCTS()
         curr_node = initial_node
         while True:
-          # WHITE MOVES
-          pi = monte_tree_1.get_policy(curr_node, NEURAL_NETWORK_THINK, neural_network_1)
+          if not curr_node.is_expanded():
+            curr_node.expand()
+          # for i,child in enumerate(curr_node.children):
+            # if not child:
+              # pi[i] = 0
+          # pi = pi / sum(pi).item()
+
+          # """
+          pi,v = neural_network_1.safe_predict(curr_node.gamestate)
+          if CUDA:
+            pi = pi.detach().cpu().numpy() 
+            pi = pi.reshape(-1)
+          else:
+            pi = pi.view(-1)
 
           for i,child in enumerate(curr_node.children):
             if not child:
               pi[i] = 0
-          pi = pi / sum(pi)
+          pi = pi / sum(pi).item()
+
+          # print("policy:",pi)
+          # print(sum(pi))
+          # """
+          # curr_node = np.random.choice(curr_node.children, p=pi)
+          # WHITE MOVES
+          # pi = monte_tree_1.get_policy(curr_node, NEURAL_NETWORK_THINK, neural_network_1)
+
+          # for i,child in enumerate(curr_node.children):
+            # if not child:
+              # pi[i] = 0
+          # pi = pi / sum(pi)
+
+          # if not curr_node.is_expanded():
+            # curr_node.expand()
 
           curr_node = np.random.choice(curr_node.children, p=pi)
 
@@ -156,12 +156,40 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
             break
 
           # BLACK MOVES
-          pi = monte_tree_2.get_policy(curr_node, NEURAL_NETWORK_THINK, neural_network_2)
+          if not curr_node.is_expanded():
+            curr_node.expand()
+          # for i,child in enumerate(curr_node.children):
+            # if not child:
+              # pi[i] = 0
+          # pi = pi / sum(pi).item()
+
+          # """
+          pi,v = neural_network_2.safe_predict(curr_node.gamestate)
+          if CUDA:
+            pi = pi.detach().cpu().numpy() 
+            pi = pi.reshape(-1)
+          else:
+            pi = pi.view(-1)
 
           for i,child in enumerate(curr_node.children):
             if not child:
               pi[i] = 0
-          pi = pi / sum(pi)
+          pi = pi / sum(pi).item()
+
+          # print("policy:",pi)
+          # print(sum(pi))
+          # """
+          # curr_node = np.random.choice(curr_node.children, p=pi)
+          # WHITE MOVES
+          # pi = monte_tree_1.get_policy(curr_node, NEURAL_NETWORK_THINK, neural_network_1)
+
+          # for i,child in enumerate(curr_node.children):
+            # if not child:
+              # pi[i] = 0
+          # pi = pi / sum(pi)
+
+          # if not curr_node.is_expanded():
+            # curr_node.expand()
 
           curr_node = np.random.choice(curr_node.children, p=pi)
 
@@ -186,6 +214,9 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
         neural_network_1.savemodel("./trained_models", "best_network.tar")
         neural_network_1.savemodel(first_network_path,first_network_name)
         neural_network_2.savemodel(second_network_path,second_network_name)
+    if generation % 10 == 0:
+        neural_network_1.savemodel("./trained_models", f"session_res10_gen{generation}.tar")
+
 
     print("[trainer.py] STARTING TRAINING")
     train_model(neural_network_1, state_example)

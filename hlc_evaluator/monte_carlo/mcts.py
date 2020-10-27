@@ -76,10 +76,10 @@ class MCTS():
       uct = self.Qs[state][i] + self.temp * (np.sqrt(parent_n) / (1+self.Ns[state][i]))
       uct_array.append(uct)
 
-    qu_array = np.array(qu_array)
-    qumax = np.max(qu_array)
+    uct_array = np.array(uct_array)
+    qumax = np.max(uct_array)
 
-    best_child = np.random.choice(np.argwhere(qu_array == qumax).flatten())
+    best_child = np.random.choice(np.argwhere(uct_array == qumax).flatten())
     
     next_board = state.gamestate.execute_move(children[best_child].action)
     
@@ -93,7 +93,6 @@ class MCTS():
 
 
   def nn_rollout(self,state,neural_network):
-
 
     if state.gamestate.is_terminal():
       winner = state.gamestate.reward()
@@ -109,8 +108,8 @@ class MCTS():
       policy, value = neural_network.safe_predict(state.gamestate)
       policy = policy.detach().cpu().numpy().reshape(-1)
       value = value.detach().item()
-      if state.gamestate.player == 1:
-        value = -value
+      # if state.gamestate.player == 1:
+        # value = -value
       self.Ps[state] = (policy,value)
       return -value
     else:
@@ -146,6 +145,13 @@ class MCTS():
 
     best_child = np.random.choice(np.argwhere(qu_array == qumax).flatten())
 
+    # print("child array is:")
+    # for i,c in enumerate(children):
+      # print(i,":",c)
+    # print("quarray is:")
+    # for i,p in enumerate(qu_array):
+      # print(i,":",p)
+    # state.gamestate.print_board()
     next_board = state.gamestate.execute_move(children[best_child].action)
     
     next_state = Node(next_board,children[best_child].action)
@@ -169,6 +175,7 @@ class MCTS():
       # CONSIDER LOOKING AT ALL MAX MOVES AND PICKING RANDOM
       best_child = np.argmax(policy)
       policy[best_child] = 1.0
+      policy = np.array(policy)
 
     else:
       policy = [x ** (1.0 / temp) for x in policy]

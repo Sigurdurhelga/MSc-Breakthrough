@@ -1,6 +1,6 @@
 from monte_carlo.mcts import MCTS
 from monte_carlo.mctsnode import Node
-from game_environments.play_chess.playchess import PlayChess
+# from game_environments.play_chess.playchess import PlayChess
 from game_environments.breakthrough.breakthrough import BTBoard, config as BTconfig
 from pprint import pprint
 from collections import namedtuple
@@ -69,7 +69,7 @@ whitewins = 0
 blackwins = 0
 
 for _ in tqdm(range(100)):
-    winner = play_game(100,30)
+    winner = play_game(30,50)
     if winner == 1:
         whitewins += 1
     else:

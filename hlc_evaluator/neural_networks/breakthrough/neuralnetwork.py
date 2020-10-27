@@ -119,8 +119,10 @@ class BreakThroughAlphaZero(nn.Module):
   def __init__(self,game_width, game_height, game_move_amount, conv_filters=128):
     super(BreakThroughAlphaZero, self).__init__()
     self.convBlock = ConvBlock(game_width, game_height, conv_filters)
-    self.residualBlocks = []
-    for i in range(2):
+
+    self.residual_layer_count = 10
+
+    for i in range(self.residual_layer_count):
       setattr(self, f"res_{i}", ResBlock(conv_filters, "res_layer_{}".format(i)))
 
     self.outBlock = OutBlock(game_width, game_height, game_move_amount, conv_filters)
@@ -131,7 +133,7 @@ class BreakThroughAlphaZero(nn.Module):
 
   def forward_0(self, in_val):
     output = self.convBlock(in_val)
-    for i in range(2):
+    for i in range(self.residual_layer_count):
       output = getattr(self, f"res_{i}")(output)
     return output
 

@@ -5,6 +5,8 @@ from game_environments.gamenode import GameNode
 from game_environments.breakthrough.breakthrough import BTBoard, config as BTconfig
 from neural_networks.breakthrough.breakthrough_nn import BreakthroughNN
 
+import torch
+
 import numpy as np
 from tqdm import tqdm
 
@@ -15,22 +17,26 @@ GAME = {
 selected_game = GAME["breakthrough"]
 initial_state = selected_game.initial_state()
 
+CUDA = torch.cuda.is_available()
+
 def selfplay(first_network_path, first_network_name, second_network_path, second_network_name, state_example):
 
   neural_network_1 = BreakthroughNN(state_example.cols, state_example.rows, state_example.get_move_amount())
   neural_network_2 = BreakthroughNN(state_example.cols, state_example.rows, state_example.get_move_amount())
 
-  test_as_white = False
+  test_as_white = True
 
   if test_as_white:
     neural_network_1.loadmodel(first_network_path, first_network_name)
+    neural_network_2.loadmodel(second_network_path, second_network_name)
   else:
     neural_network_2.loadmodel(first_network_path, first_network_name)
+    neural_network_1.loadmodel(second_network_path, second_network_name)
 
   memo_nn1 = {}
   memo_nn2 = {}
 
-  NN_THINK = 1
+  NN_THINK = 100
 
   initial_node = Node(state_example.initial_state(), "START")
   first_win = 0
@@ -38,7 +44,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
   total_games = 0
   while True:
 
-    for _ in tqdm(range(100)):
+    for _ in range(100):
       curr_node = initial_node
       monte_tree_1 = MCTS()
       monte_tree_2 = MCTS()
@@ -46,21 +52,32 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
       while True:
 
         # WHITE MOVES
-        pi = monte_tree_1.get_policy(curr_node, NN_THINK, neural_network_1)
+        # pi = monte_tree_1.get_policy(curr_node, NN_THINK, neural_network_1,0)
+
         
         if not curr_node.is_expanded():
           curr_node.expand()
+        # for i,child in enumerate(curr_node.children):
+          # if not child:
+            # pi[i] = 0
+        # pi = pi / sum(pi).item()
 
+        # """
         pi,v = neural_network_1.safe_predict(curr_node.gamestate)
-        pi = pi.view(-1)
+        if CUDA:
+          pi = pi.detach().cpu().numpy() 
+          pi = pi.reshape(-1)
+        else:
+          pi = pi.view(-1)
 
         for i,child in enumerate(curr_node.children):
           if not child:
             pi[i] = 0
         pi = pi / sum(pi).item()
 
-        print("policy:",pi)
-        print(sum(pi))
+        # print("policy:",pi)
+        # print(sum(pi))
+        # """
         curr_node = np.random.choice(curr_node.children, p=pi)
 
         if curr_node.gamestate.is_terminal():
@@ -69,18 +86,31 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
           break
 
         # BLACK MOVES
-        pi = monte_tree_2.get_policy(curr_node, NN_THINK, neural_network_2)
+        # pi = monte_tree_2.get_policy(curr_node, NN_THINK, neural_network_2,0)
+        
         if not curr_node.is_expanded():
           curr_node.expand()
+
+        # for i,child in enumerate(curr_node.children):
+          # if not child:
+            # pi[i] = 0
+        # pi = pi / sum(pi).item()
+        # """
         pi,v = neural_network_2.safe_predict(curr_node.gamestate)
-        pi = pi.view(-1)
+        if CUDA:
+          pi = pi.detach().cpu().numpy() 
+          pi = pi.reshape(-1)
+        else:
+          pi = pi.view(-1)
 
         for i,child in enumerate(curr_node.children):
           if not child:
             pi[i] = 0
         pi = pi / sum(pi).item()
-        print("policy:",pi)
-        print(sum(pi).item())
+        # print("policy:",pi)
+        # print(sum(pi).item())
+
+        # """
 
         curr_node = np.random.choice(curr_node.children, p=pi)
 
@@ -88,17 +118,16 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
           if curr_node.gamestate.reward() == -1:
             second_win += 1
           break
-      if test_as_white:
-        print("Bestnetwork {} random {} winrate {}".format(first_win, second_win, first_win / total_games))
-      else:
-        print("Bestnetwork {} random {} winrate {}".format(second_win, first_win, second_win / total_games))
-    print("ENDGAME:")
-    curr_node.gamestate.print_board()
-    print("STATS AFTER EPISODE")
+      # if test_as_white:
+        # print("Bestnetwork {} random {} winrate {}".format(first_win, second_win, first_win / total_games))
+      # else:
+        # print("Bestnetwork {} random {} winrate {}".format(second_win, first_win, second_win / total_games))
     if test_as_white:
-      print("Bestnetwork {} random {} winrate {}".format(first_win, second_win, first_win / total_games))
+      winrate = first_win/total_games
     else:
-      print("Bestnetwork {} random {} winrate {}".format(second_win, first_win, second_win / total_games))
+      winrate = second_win/total_games
+    return winrate
 
 network_path = "./trained_models"
-selfplay(network_path,"test_network.tar", network_path, "random.tar",initial_state)
+for i in range(1,8):
+    print(i*10, selfplay(network_path,f"session_res10_gen{i*10}.tar", network_path, "random.tar",initial_state))
