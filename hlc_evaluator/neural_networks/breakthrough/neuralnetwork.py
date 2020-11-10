@@ -120,7 +120,7 @@ class BreakThroughAlphaZero(nn.Module):
     super(BreakThroughAlphaZero, self).__init__()
     self.convBlock = ConvBlock(game_width, game_height, conv_filters)
 
-    self.residual_layer_count = 10
+    self.residual_layer_count = 5
 
     for i in range(self.residual_layer_count):
       setattr(self, f"res_{i}", ResBlock(conv_filters, "res_layer_{}".format(i)))

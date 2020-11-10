@@ -51,19 +51,22 @@ def alphabeta(node, depth, alpha, beta):
 def alpha_beta_search(node,depth,heuristic):
     global selected_heuristic
     selected_heuristic = heuristic
-    children = [node.execute_move(move) for move in node.legal_moves]
+    children = [(node.execute_move(move),move) for move in node.legal_moves]
     is_maxing = node.player == config.WHITE
     best_val = -float("inf") if is_maxing else float("inf")
     best_child = None
-    for child in children:
+    best_move = None
+    for child,move in children:
         child_val = alphabeta(child,depth-1,-float("inf"),float("inf"))
         if is_maxing and child_val > best_val:
             best_val = child_val
             best_child = child
+            best_move = move
         elif not is_maxing and child_val < best_val:
             best_val = child_val
             best_child = child
-    return best_child
+            best_move = move
+    return (best_child,best_move)
         
 
 

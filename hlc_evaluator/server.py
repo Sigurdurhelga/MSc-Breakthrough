@@ -69,18 +69,21 @@ def post_move():
         return jsonify({"valid":False})
 
 neural_network = BreakthroughNN(working_board.gamestate.cols, working_board.gamestate.rows, working_board.gamestate.get_move_amount())
-neural_network.loadmodel('./trained_models', 'session_res5_gen300.tar')
+neural_network.loadmodel('./trained_models', 'session2_res5_gen300.tar')
 
 @app.route('/get_ai_move', methods=['GET'])
 def get_ai_move():
     global neural_network, working_board
     think = request.args.get('think', default=10, type=int)
     monte_tree = MCTS()
-    pi = monte_tree.get_policy(working_board, think, neural_network)
-
+    pi,v = neural_network.safe_predict(working_board.gamestate)
+    pi = pi.detach().cpu().numpy()[0]
+    if not working_board.is_expanded():
+        working_board.expand()
     for i,child in enumerate(working_board.children):
         if not child:
             pi[i] = 0
+
     pi = pi / sum(pi)
 
     working_board = np.random.choice(working_board.children, p=pi)
