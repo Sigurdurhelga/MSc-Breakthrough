@@ -2,14 +2,20 @@
 
 \ifdraft{Here I will discuss the myriad of fields research like this can help
 for instance for health organizations, patients, taxpayers, and pharma}
-hey
+
+This section discusses the results and the future work that could span from this research. Additionally, we conclude the work.
 
 \section{Summary}
 
-\ifdraft{summarize the work}
-hey
+As seen in Chapter~\ref{cha:results}. the our trained agent does indeed quickly rise to using the higher level concepts. However, there is not a lot of difference between each heuristic, and not much variability in the heuristics once it reaches $\tilde50\%$. These results are not what we hoped we would see, as a concept like numbers advantage clearly isn't a great heuristic. A reasonable assumption would be that as we train the agent more it will start to use these strategies more, or to increase the size of the neural network to gain performance equal or better to that of a human player. 
+
+There is a possibility that the described HLC's are not the HLC's that a neural network uses to play the game, and thus we don't see a connection between the network and the concepts. The amount of HLC however is infinite and they must be selected carefully, we selected only ones that are common beginner heuristics in board games. A possible avenue of research would be to examine a fully trained neural network that does compete in games at a super human level, a network like AlphaZeroGo and examine it's play style. From its play style it would be possible to gather which HLC's it focusess on, then retraining the model examining these HLC's over time to find new pedagogical method of teaching Go.
+
+Additionally applying this method to a greater set of environment would be an interesting field of research. We envision a self driving car agent being examined with respect to a higher level concept of aggressiveness, or a mortgage agent being examined with respect to a higher level concept of racism.
+
 
 \section{Conclusion}
 
 \ifdraft{conclude the work, discuss the significance of the work}
-hey
+
+The work done in this paper is only a first step in examining working agents in active environments with respect to human level concepts. If improved could have a great impact in our trust on neural network that improve our daily lives. While the testbed for the research was a discrete game environment, there is a clear way forward to a dynamic system with discrete human level concepts. Our results show that for an agent that clearly doesn't achieve human level performance it's actions are often selected with respect to human level concepts, up to 60\% of the actions. 

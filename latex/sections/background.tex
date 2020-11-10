@@ -1,69 +1,50 @@
 \chapter{Background\label{cha:background}}
 
-In this chapter we discuss traditional artificial intelligence in the context of search the algorithms we used, what some other similar 
-methods exist as well as the field in general.
+In this chapter, we discuss traditional artificial intelligence in the context of search the algorithms we used, what some other similar methods exist as well as the field in general. We allocate a large portion of the section to Breakthrough as that will be the testbed for future sections
 
 \section{Environments}
 \label{sec:environments}
 
-When doing research on Artificial Intelligence it is important to select 
-an environment that is a suitable abstraction for the task at hand. Environments vary 
-significantly, and can be identified by their characteristic. The characteristics 
-that are generally used to describe environments can be seen in Table \ref{tab:env_characteristics}. 
-CITE AIMABOOK
+When researching Artificial Intelligence it is important to select an environment that is a suitable abstraction for the task at hand. Environments vary significantly and can be identified by their characteristic. The characteristics that are generally used to describe environments can be seen in Table~\ref{tab:env_characteristics}. \cite{Russell:AIModern}
 
 \begin{table}[h]
   \centering
   \begin{tabular}{|c|c|p{6cm}|}
     \hline
-    \textbf{characteristic} & \textbf{Values} & \textbf{Description}\\
+    \textbf{characteristic} & \textbf{Values}              & \textbf{Description}                                                \\
     \hline
-    Observable & Fully, Partially & How much of the environment can your agent percieve.\\
+    Observable              & Fully, Partially             & How much of the environment can your agent percieve.                \\
     \hline
-    Agents & Single, Multi & Are there multiple agents playing in the environment.\\
+    Agents                  & Single, Multi                & Are there multiple agents playing in the environment.               \\
     \hline
-    Deterministic & Deterministic, Stochastic & Do the actions your agent do deterministicly impact the environment\\
+    Deterministic           & Deterministic, Stochastic    & Do the actions your agent do deterministicly impact the environment \\
     \hline
-    Episodic & Sequential, Episodic & Are actions episodic or sequential\\
+    Episodic                & Sequential, Episodic         & Are actions episodic or sequential                                  \\
     \hline
-    Static & Static, Semi-Static, Dynamic & ehh  \\
+    Static                  & Static, Semi-Static, Dynamic & ehh                                                                 \\
     \hline
-    Discrete & Discrete, Continuous & Is your environment discrete w.r.t actions (does it end) \\
+    Discrete                & Discrete, Continuous         & Is your environment discrete w.r.t actions (does it end)            \\
     \hline
   \end{tabular}
   \caption{Characteristics of environments}
   \label{tab:env_characteristics}
 \end{table}
 
-Categorizing environments like this gives you the power to find an environment in which 
-a method works and know it can be applied to different environments with the same characteristics.
-Talk about \textbf{agents} in the context of environments as the entities that act within the 
-environment. A game player is an agent as well as the neural network model that exists within 
-a car that is able to drive in the real world.
+Categorizing environments like this gives you the power to find an environment in which a method works and know it can be applied to different environments with the same characteristics. Talk about agents in the context of environments as the entities that act within the environment. A game player is an agent as well as the neural network model that exists within a car that can drive in the real world.
 
 \section{Game Environment}
 
-With classical Artificial Intelligence Game Environments are commonly used to validate a method, 
-game environments can be games like Tic-Tac-Toe, Breakthrough, and driving simulators. Game environments 
-are a suitable place to apply AI as they serve an important function as an abstraction of the real 
-world, for instance, a self-driving car agent who is verified to avoid driving into walls in a 
-simulation is possibly safer than one who is not.
+With classical Artificial Intelligence Game Environments are commonly used to validate a method, game environments can be games like Tic-Tac-Toe, Breakthrough, and driving simulators. Game environments are a suitable place to apply AI as they serve an important function as an abstraction of the real world, for instance, a self-driving car agent who is verified to avoid driving into walls in a simulation is possibly safer than one who is not.
 
 \section{Breakthrough}
 
-The game breakthrough is a simplified version of chess, the game is set up on an $MxN$ board with 
-cells like in chess, and each player starts with two rows of pawns at either end. The objective of the 
-game is to move one of the pawn pieces to the opposite end of the board. A player wins if 
-either they have reached the opposite end of the board, or has captured all of his opponents pawns.
-The pawns differ from chess pawns in such a way that they can not move two squares on the first move and,
-they can move diagonally as well as forward, this leads to the game being impossible to draw as 
-pieces are always able to move. An example of an initial board in breakthrough can be seen in Figure \ref{fig:initbtboard}
+The game breakthrough is a simplified version of chess, the game is set up on a $MxN$ board with cells like in chess, and each player starts with two rows of pawns at either end. The objective of the game is to move one of the pawn pieces to the opposite end of the board. A player wins if either they have reached the opposite end of the board or have captured all of his opponents' pawns. The pawns differ from chess pawns in such a way that they can not move two squares on the first move and, they can move diagonally as well as forward, this leads to the game being impossible to draw as pieces are always able to move. An example of an initial board in breakthrough can be seen in Figure~\ref{fig:initbtboard}
 
 \begin{figure}[]
   \centering
 
   \breakthrough{8/8/pppppp2/pppppp2/8/8/PPPPPP2/PPPPPP2 w - - 0 1}
-  
+
   \caption{Example breakthrough board}
   \label{fig:initbtboard}
 \end{figure}
@@ -72,30 +53,27 @@ pieces are always able to move. An example of an initial board in breakthrough c
 \begin{table}[h]
   \centering
   \begin{tabular}{|c|c|}\hline
-    \textbf{Characteristic} & \textbf{Value}\\\hline
-    Observable & Fully \\
-    Agents & Multi \\
-    Deterministic & Deterministic\\
-    Episodic & Sequential \\
-    Static & Static \\
-    Discrete & Discrete \\\hline
+    \textbf{Characteristic} & \textbf{Value} \\\hline
+    Observable              & Fully          \\
+    Agents                  & Multi          \\
+    Deterministic           & Deterministic  \\
+    Episodic                & Sequential     \\
+    Static                  & Static         \\
+    Discrete                & Discrete       \\\hline
   \end{tabular}
   \caption{Categorization of Breakthrough}
   \label{tab:breakthrough_cat}
 \end{table}
 
-Categorizing Breakthrough with the characteristics described in Section \ref{sec:environments}. We end up with the description 
+Categorizing Breakthrough with the characteristics described in Section \ref{sec:environments}. We end up with the description
 shown in Table \ref{tab:breakthrough_cat}. These characteristics are identical to that of Tic-Tac-Toe, and Chess.
-This categorization is the most common in board games where two player compete. 
+This categorization is the most common in board games where two player compete.
+
+Categorizing Breakthrough with the characteristics described in Section~\ref{sec:environments}. We end up with the description shown in Table~\ref{tab:breakthrough_cat}. These characteristics are identical to that of Tic-Tac-Toe, and Chess. This categorization is the most common in board games where two-player compete.
 
 \subsection{Heuristics of Breakthrough}
 
-To evaluate the game of Breakthrough we can consider many heuristics (higher-level concepts) for instance 
-a very simple heuristic would be the amount of pieces each player has left. This heuristics gives us some 
-insight into how well the game is progressing, but obviously there are cases where this doesn't tell us 
-much, as in cases when your opponent has a single piece left that is on the row immediately before the 
-row needed for him to win. No matter how many pieces you have left, this state is bad for you if you're not 
-able to capture that piece. An example of such a state can be seen in Figure \ref{fig:bt_h1_bad}.
+To evaluate the game of Breakthrough we can consider many heuristics (higher-level concepts) for instance a very simple heuristic would be the number of pieces each player has left. This heuristics gives us some insight into how well the game is progressing, but obviously, there are cases where this doesn't tell us much, as in cases when your opponent has a single piece left that is on the row immediately before the row needed for him to win. No matter how many pieces you have left, this state is bad for you if you're not able to capture that piece. An example of such a state can be seen in Figure~\ref{fig:bt_h1_bad}.
 
 \begin{figure}[]
   \centering
@@ -104,59 +82,31 @@ able to capture that piece. An example of such a state can be seen in Figure \re
   \label{fig:bt_h1_bad}
 \end{figure}
 
-
-A different heuristic would be the distance of your most advanced pawn minus your opponents most 
-advanced pawn, this heuristic could give you insight into how close you are to winning the game or 
-how close your opponent is. As a higher level concept we can call this concept your aggressiveness, 
-as it closely resembles how aggressive you are for going in for the win. Generally in Breakthrough 
-it is favorable to move your whole team as a unit and play more defensively (CITE UNITY HEURISTIC), so this heuristic 
-is probably not one that will lead to the most wins.
+A different heuristic would be the distance of your most advanced pawn minus your opponents most advanced pawn, this heuristic could give you insight into how close you are to winning the game or how close your opponent is. As a higher-level concept, we can call this concept your aggressiveness, as it closely resembles how aggressive you are going for in for the win. Generally, in Breakthrough, it is favorable to move your whole team as a unit and play more defensively, so this heuristic is probably not one that will lead to the most wins.
 
 \section{State-Space Search}
 
-Traditionally methods for playing games were searching through the environment using a heuristic to
-guide the search. A simple way of doing a heuristic based search would be to give all states a $0$ 
-as a score and give states where you win a positive score. We say that those search algorithm 
-is not guided, and the algorithm will probably have to evaluate every state in the state-space. 
-This method of searching is generally extremely inefficient as the state-spaces of game environments 
-are often extremely large, and sometimes infinite. For instance an estimate of the state-space 
-for the game breakthrough is $M * N * 2^{N*4}$ where $M$ is the height of the board $N$ is the width 
-of the board. The $2^{N*4}$ represent each piece either being alive or captured. So for a small board
-$5x4$ the estimated state-space is $1310720$ many states.
+Traditionally methods for playing games were searching through the environment using a heuristic to guide the search. A simple way of doing a heuristic-based search would be to give all states a $0$ as a score and give states where you win a positive score. We say that that search algorithm is not guided, and the algorithm will probably have to evaluate every state in the state-space. This method of searching is generally extremely inefficient as the state-spaces of game environments are often extremely large, and sometimes infinite. For instance, an estimate of the state-space for breakthrough is $M * N * 2^{N*4}$ where $M$ is the height of the board $N$ is the width of the board. The $2^{N*4}$ represents each piece either being alive or captured. So for a small board, $5x4$ the upper-bound estimation of the state-space is $1310720$ states.
 
-This is why a good heuristic is very valuable because we can disregard all states $S'$ that 
-result from doing a move $a$ in state $S$ as they will only lead to worse outcomes.
+This is why a good heuristic is very valuable because we can disregard all states $S'$ that result from doing a move $a$ in state $S$ as they will only lead to worse outcomes.
 
-The algorithms that are used in traditional state-space search are for instance Depth-first search (DFS),
-Breadth-first Search (BFS), Alpha-Beta Pruning Search (AB-Search), and Monte-Carlo Tree Search (MCTS).
+The algorithms that are used in traditional state-space searches are for instance Depth-first search (DFS), Breadth-first Search (BFS), Alpha-Beta Pruning Search (AB-Search), and Monte-Carlo Tree Search (MCTS).
 
-More modernly these search methods have been amplified by Machine Learning, in such a way that 
-we do not need to figure out a good heuristic for a given state, but rather, we apply a machine 
-learning model to learn a function that takes in a state and returns an evaluation of that state.
-This can lead to a significant time reduction as we do not need to simulate a whole game from a 
-state to receive its evaluation we rather receive the evaluation from the model.
+More modernly, these search methods have been amplified by Machine Learning, in such a way that we do not need to figure out a good heuristic for a given state, but rather, we apply a machine learning model to learn a function that takes in a state and returns an evaluation of that state. This can lead to a significant time reduction as we do not need to simulate a whole game from a state to receive its evaluation we rather receive the evaluation from the model.
 
 \subsection{Monte-Carlo Tree Search}
 
 \label{sec:mcts}
 
-In the algorithm Monte-Carlo Tree Search there is an agent exists
-within some environment. Where each node in the environment represents a state-action pair of the environment, by
-state-action pair what is meant it is some state and the action that brought the agent to
-that state. This pair should be unique within the environment. We will discuss these concepts within game-environments
-and therefore we might say player instead of agent and game instead of environment.
+In the algorithm Monte-Carlo Tree Search, there is an agent within some environment. Where each node in the environment represents a state-action pair of the environment, by state-action pair what is meant it is some state and the action that brought the agent to that state. This pair should be unique within the environment. We will discuss these concepts within game-environments and therefore we might say player instead of agent and game instead of the environment.
 
 MCTS is a method of exploring an environment in a randomized manner (Monte Carlo is the term implying
 randomness). In MCTS there are four stages. Selection, Expansion, Simulation, and Back-propagation. They happen sequentially
 and repeatedly. MCTS is initialized with a tree consisting of the unexpanded initial state of the environment.
 
-In MCTS there is a tree representing the game-environment. This tree consists of nodes $n_i$ where $i$ represents the point in time
-of the node, for example $N_0$ in chess is the initial position and $N_x$ is some position in the middle of the game and $N_e$ is one of
-the states representing a position where there is either a draw or one player has won the match. Each of the nodes has $4$ values,
-$s$, $a$, $Q$, and $N$. These values represent these items, $s$ is state of the environment, $a$ is the action that brought
-the previous node $n_(i-1)$ to node $n_i$, $Q$ is the average value of the node (value meaning the outcome of the game),
-and $N$ the amount of times the MCTS algorithm has visited this node. The values $s$ and $a$ uniquely identify a position
-in the environment and are often called state-action pairs.
+MCTS is a method of exploring an environment in a randomized manner (Monte Carlo is the term implying randomness). In MCTS there are four stages. Selection, Expansion, Simulation, and Back-propagation. They happen sequentially and repeatedly. MCTS is initialized with a tree consisting of the unexpanded initial state of the environment.
+
+In MCTS there is a tree representing the game-environment. This tree consists of nodes $n_i$ where $i$ represents the point in time of the node, for example, $N_0$ in chess is the initial position and $N_x$ is some position in the middle of the game and $N_e$ is one of the states representing a position where there is either a draw or one player has won the match. Each of the nodes has $4$ values, $s$, $a$, $Q$, and $N$. These values represent these items, $s$ is the state of the environment, $a$ is the action that brought the previous node $n_(i-1)$ to node $n_i$, $Q$ is the average value of the node (value meaning the outcome of the game), and $N$ the number of times the MCTS algorithm has visited this node. The values $s$ and $a$ uniquely identify a position in the environment and are often called state-action pairs.
 
 The MCTS algorithms four phases
 \begin{enumerate}
@@ -172,7 +122,7 @@ The MCTS algorithms four phases
 \end{equation}
 
 \subsection*{Selection}
-During the selection phase a node $(s,a)$ within the tree which has not yet been expanded is found.
+During the selection phase, a node $(s,a)$ within the tree which has not yet been expanded is found.
 This process uses Upper Confidence Bound on Trees (UCT) to find that node $(s,a)$, the formula is described in Equation \ref{UCT_formula}. For a parent node $(s,a)$
 (initially the root of the tree) we select the child with the highest UCT value. Repeatedly until an unexpanded
 node is found. This process is done to balance the amount of exploration vs exploitation of nodes in the
@@ -185,9 +135,9 @@ product of applying each action $a'$ to $s$ in the parent node.
 
 \subsection*{Rollout}
 Next during rollout actions from $(s,a)$ are randomly selected to move to $(s',a')$, then repeated
-to go to $(s'',a'')$, until a terminal node within the environment is reached. By terminal we mean a
+to go to $(s'',a'')$, until a terminal node within the environment is reached. By terminal, we mean a
 state in which the game is finished. A terminal node in MCTS can generally return any value, but in the
-context of this paper we only return (+1 white wins, -1 black wins, 0 draw).
+context of this paper, we only return (+1 white wins, -1 black wins, 0 draw).
 
 
 \subsection*{Backpropagation}
@@ -197,7 +147,7 @@ to the root of the tree, updating the $Q_{(s,a)}$ values of each node $(s,a)$.
 When training a neural network the UCT formula is modified slightly to prefer selecting nodes
 that the neural network values highly by introducing a second scalar to the formula $f(s,a) = (p,v)$,
 the resulting formula is described in Equation \ref{PUCT_formula}, and is called PUCT. Secondly, the backpropagation process
-is modified to instead of doing rollout/simulation to recieve a reward the predicted value $v$ from
+is modified to instead of doing rollout/simulation to receive a reward the predicted value $v$ from
 the neural network is used instead.
 
 \begin{equation} \label{PUCT_formula}
@@ -206,7 +156,7 @@ the neural network is used instead.
 
 \section{Machine Learning}
 
-Machine Learning (ML) is a research field in which machines apply statistical functions on data to achieve the output that is \textit{correct}, by correct we mean the corresponding result which we expect. Generally this a repetitive process where we look at examples of the data, and the algorithm progressively gets closer to the underlying function of the data it is fed. This process is therefore similar to trial and error for humans. ML is a sub-field of Artificial Intelligence. ML algorithms come in the form of two classes \textit{Classification}, where the algorithm should find a class representing the data its given, and \textit{Regression} where the algorithm should find an underlying continuous numerical function and will return a numerical value representing the input. 
+Machine Learning (ML) is a research field in which machines apply statistical functions on data to achieve a correct output, by \textit{correct} we mean the corresponding result which we expect. Generally, this a repetitive process where we look at examples of the data, and the algorithm progressively gets closer to the underlying function of the data it is fed. This process is therefore similar to trial and error for humans. ML is a sub-field of Artificial Intelligence. ML algorithms come in the form of two classes \textit{Classification}, where the algorithm should find a class representing the data it is given, and \textit{Regression} where the algorithm should find an underlying continuous numerical function and will return a numerical value representing the input.
 
 Typically ML can be viewed in three different groups, Supervised Learning, Reinforcement Learning (RL), and Unsupervised Learning. Where in Supervised Learning, the algorithm is given data examples and their corresponding outcome. For example, a supervised learning algorithm could be provided with data regarding the weather and the corresponding temperature, the algorithm should then find a pattern within the weather data and find the continuous function represented by the data. This would then be an example of a regression task. Flipping thing example around, if the algorithm would just be provided the temperature and it should tell us whether it is sunny outside or not, that would be a classification task.
 
@@ -231,46 +181,29 @@ Reinforcement Learning is where a model learns from experience. That is, the not
 % When doing moving it's parameters in the direction of the recieved output
 % from the environment.
 
-Many algorithms are popular in reinforcement learning, for instance Q-learning(CITE ME), CARLA (CITE ME), 
-and many others. 
+Many algorithms are popular in reinforcement learning, for instance Q-learning(CITE ME), CARLA (CITE ME),
+and many others.
 
 \subsection{Neural Networks}
 
-Neural networks (NN) are popular methods within a sub-field of ML which is called Deep Learning (DL). 
-NN's are created to resemble how the human brain functions. In the brain we have neurons which 
-when they get a signal they apply some function to them and if the resulting signal is high 
-enough, they fire to the next neuron. This is how it is done in the neural network model as well.
-There we have neurons that when they get some input, generally a vector of numbers. The neuron 
-takes the sum of that vector, weights the sum by a constant, then applies a non-linear activation 
-function to it. The result of doing this is then passed on to the next neuron. Until a final layer 
-of neurons is reached. At that point we have a value that the neural network corresponds to the 
-input value. This value can be a binary classification (cat or dog image), a regression value (the 
-value of a property), or any number of outputs. It can then be said that a neural network is doing 
-a function approximation of an input to some value. $f_n ( w_n * f_{n-1} (w_{n-1} * \dots f_0(w_0*i))) = o$. 
+Neural networks (NN) are popular methods within a sub-field of ML which is called Deep Learning (DL).
+NN's are created to resemble how the human brain functions. In the brain, we have neurons which when they get a signal they apply some function to them and if the resulting signal is high enough, they fire to the next neuron. This is how it is done in the neural network model as well.
+There we have neurons that when they get some input, generally a vector of numbers. The neuron takes the sum of that vector, weighs the sum by a constant, then applies a non-linear activation function to it. The result of doing this is then passed on to the next neuron. Until a final layer of neurons is reached. At that point, we have a value that the neural network corresponds to the input value. This value can be a binary classification (cat or dog image), a regression value (the value of a property), or any number of outputs. It can then be said that a neural network is doing a function approximation of the input to some value. $f_n ( w_n * f_{n-1} (w_{n-1} * \dots f_0(w_0*i))) = o$.
 
-Neural networks are machine learning models that take in as input anything that is numerical 
-and they apply differentiatable function to that input s.t. they end with some output. This 
-output is then compared to the expected output the difference between these outputs is called 
-a loss. A loss is backpropagated through the neural network, and each function is derived in 
-order to find its slope. We can then modify the weights of the neural network in the direction 
-of the correct output. Leading to a function approximation of this function
-$f_{neuralnetwork}(X_{input}) = O_{expectedoutput}$
+Neural networks are machine learning models that take in as input anything numerical and they apply continuous differentiable functions to that input s.t. they end with some output. This output is then compared to the expected output the difference between these outputs is called a loss. A loss is backpropagated through the neural network, and each function is derived to find its slope. We can then modify the weights of the neural network in the direction of the correct output. Leading to a function approximation of this function $f_{neuralnetwork}(X_{input}) = O_{expectedoutput}$
 
 \section{Explainable Artificial Intelligence (XAI)}
 
-The field of XAI research is still very far behind it's counterpart AI research,
-within XAI two fields are concidered the largest that is Model Interpretability
-and Model Explainability.
+The field of XAI research is still very far behind its counterpart AI research, within XAI two fields are the largest, those are Model Interpretability and Model Explainability.
 
 \subsection{Model Interpretability}
-
 
 \subsubsection{Saliency Maps}
 Within XAI many methods have been developed to try to evaluate
 ANN's, these methods are often referred as model interpretability methods.
 In the field image recognition there has been a lot of work examining which
 pixels of an image the model deems important. Arguably the most popular
-method for this is Saliency Maps (CITE ME). There the pixel values the model
+method for this is Saliency Maps\cite{Koch:saliency}. There the pixel values the model
 deems important are colored in s.t. a human can examine the image and get a
 sense of what portions of the image are important to the model, an example of
 a classification of a dog can be seen in Figure \ref{fig:dog_saliency}.
@@ -288,7 +221,7 @@ lacks severely when your input is not an image.
 \subsubsection{Shapley Values}
 
 Methods for explaining models that aren't image recognition models include
-shapley values. There the input is examined against it's output, then iteratively
+shapley values, from the Lundberg \& Lee\cite{LundbergL:shapley}. There the input is examined against it's output, then iteratively
 input values are selected to be fixed. Then the other input values are varied and
 an average change in prediction is calculated. With this the shapley value can be
 estimated for the fixed input value. This is done to examine which input values have
@@ -297,19 +230,19 @@ on which input values the model deems important.
 
 \subsubsection{Concept Activation Vectors}
 
-A recent paper by Been Kim Et. al (CITATION NEEDED), shows a method for examining
+A recent paper by Been Kim Et. al \cite{Keem:TCAV}, shows a method for examining
 a neural network giving a much more human insight into a prediction. Using Concept
 Activation Vectors (CAV) a directional derivative for a given input can be examined
 with respect to some HLC's. For example, when a human looks at an image of an animal
 and is supposed to decide whether the image is of a horse or a zebra, an intuitive
-approach would be to check whether the animal has stipes, or is both white and black.
+approach would be to check whether the animal has stipes, or the animal has both white and black colors.
 That method of determining if a horse is a zebra could then be called a higher-level
-concept, and if we're able to gather if a nerual network uses this strategy for prediction 
-we have a deeper understanding of its underlying structure. Leading to an explanation of 
+concept, and if we're able to gather if a nerual network uses this strategy for prediction
+we have a deeper understanding of its underlying structure. Leading to an explanation of
 the result.
 
-CAV's in neural networks are just binary classifiers of the same dataset used to train
-a neural network. The 
+The construction of a CAV requires a method of labelling the values in your dataset with
+the corresponding concept in order to create a simple binary classifier on the data points.
 
 \subsection{Model Explainability}
 
@@ -322,6 +255,7 @@ based on the value of the input value. It is therefore easy to see how to examin
 to explain the output. We just follow the branches in the tree. That being said the branches
 are created by algorithms like ID3 which construct branches based on the initial dataset used
 to construct the tree, but again ID3 follows simple statistics and can be explained properly.
+
 
 When we talk about neural networks this process is much more difficult, the underlying nodes
 are generally in the thousands, the different layers of the neural network varies in the operations
