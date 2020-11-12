@@ -1,21 +1,16 @@
 \chapter{Introduction\label{cha:introduction}}
 %% \ifdraft only shows the text in the first argument if you are in draft mode.
 %% These directions will disappear in other modes.
-\ifdraft{State the objectives of the exercise. Ask yourself:
-  \underline{Why} did I design/create the item? What did I aim to
-  achieve? What is the problem I am trying to solve?  How is my
-  solution interesting or novel?}{}
-
 
 The world of deep learning (DL) is exciting, we have models that can examine
 images and very reliably be able to identify it's content. Deep learning models have
 beaten Ophthalmologists in identifying diabetic retinopathy, they've identified
-cancer cells where others have not. Deep learning models have even predicted
-the likelihood a person will die in the following year with good accuracy (CITE).
+cancer cells where others have not. Deep learning models are used for the bleeding
+edge of protein folding, to gain further understanding of the underlying structure of organisms, such as, viruses. \cite{deepmind:alphafold}
 These models have done these things extremely accurately, cheap, and fast.
 
-DL in conjunction with a randomized State-space Search Algorithm Monte-Carlo Tree Search was used to defeat the standing world champion Lee Sedol (CITE ALPHAGO ZERO) in the incredibly expansive game of Go. This was done in the year 2017, the researchers used reinforcement learning (RL), where the agent learned by only playing against itself. 
-These results imply that given enough time to learn the computer agent can gain a deep insight into how the game should be played.  
+DL in conjunction with a randomized State-space Search Algorithm Monte-Carlo Tree Search was used to defeat the standing world champion Lee Sedol (CITE ALPHAGO ZERO) in the incredibly expansive game of Go. This was done in the year 2017, the researchers used reinforcement learning (RL), where the agent learned by only playing against itself.
+These results imply that given enough time to learn the computer agent can gain a deep insight into how the game should be played.
 
 The field of examining deep learning models to gain a richer understanding
 of how they work, and what makes them so much better than humans at various tasks
@@ -23,7 +18,7 @@ is still new. This is the field of Explainable Artificial Intelligence (XAI).
 If we wish to continue using artificial intelligence (AI) and machine learning (ML),
 to improve our lives we must examine how they work, this is not only to improve
 the models themselves but could also augment our ability in many cases.
-Furthermore, these explanations are a legal requirement now in many areas, namely, legal, and
+Furthermore, these explanations are a legal requirement now in many areas\cite{legalexplanation:goodman}, namely, legal, and
 medical. Recently, XAI has generally been focused on Model Interpretability (MI), in
 particular, interpreting the model in such a way that we might predict what the model will
 do given a particular input. Another class of XAI would be Model Explainability (ME), where we can adequately explain how the internal mechanics of the model works.
@@ -33,7 +28,7 @@ that is generated from an ML algorithm, with the decision tree nodes and is cond
 In this thesis, we take a look at how we can examine an artificial neural network (ANN)
 to understand which higher-level concepts (HLC) it deems important for a given state
 within games. These games can be simple like Tic-Tac-Toe or Breakthrough and extremely
-complicated like Chess or Go. 
+complicated like Chess or Go.
 
 The method of examining HLC's within games has generally been done by examining the
 current state of the game by evaluating them concerning some heuristic. A heuristic within games are evaluations of the end reward for a state given only the state, for example,
@@ -46,15 +41,14 @@ This paper examines the evaluation of a neural network of a state regarding thos
 low but the neural network highly values it, and the neural network plays better
 than the player. There could be an avenue for us to improve our game by considering king safety more thoroughly.
 
-We define the research questions
+We define the research questions:
 
 \begin{enumerate}
-  \item Given a NN that plays Breakthrough very well, can we evaluate if that NN recognizes the 
-  HLCs that human players use.
-  \item Does a NN that trains itself using self-play learn these HLCs over time, and does it start to emphasize 
-  the HLCs that are generally taught later to human players, more as it trains itself more.
-  \item Does a NN that plays better than some humans focus on HLCs that are not generally 
-  considered by those human players and it.
+  \item Given a NN that plays Breakthrough very well, can we evaluate if that NN recognizes the
+        HLCs that human players use.
+  \item Does a NN that trains itself using self-play learn some HLCs over time, and does it start to emphasize
+        the HLCs that are generally considered better, more as it trains more, and oppositely does it start to
+        demphasize HLCs that are considered worse.
 \end{enumerate}
 
 \subsection{Summary of the thesis}

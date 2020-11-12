@@ -1,43 +1,44 @@
 \chapter{Methods\label{cha:methods}}
 
-In this chapter, we describe our implementation of the game Breakthrough and the methods for training a neural network to play the game Breakthrough, described in Chapter \ref{cha:background}. The training process uses MCTS described in Section \ref{sec:mcts} to guide its training. We outline the architecture used in the neural network.
+In this chapter, we describe our implementation of the game Breakthrough and the methods for training a neural network to play the game. The training process uses MCTS, as described in Section \ref{sec:mcts}, to guide its training. We outline the architecture used in the neural network.
 
 The training algorithm is a reinforcement learning self-play algorithm based on previous work by DeepMind~\cite{silver:alphagozero}.
 
 \section{Game Implementation}
 
-In this section, we will take a brief look at the implementation of the game Breakthrough, how we model its state representation and the pseudocode for training.
+In this section, we will take a look at the implementation of the Breakthrough neural network, how we model its state representation and the pseudo-code for training.
 
-\subsection{Breakthrough}
+\subsection{Description of the input and output}
 
-For a neural network to be able to use input, that input needs to be numeric. We model the board in gamethrough with a single $NxM$ array with three values $\{-1,0,1\}$. Where each $x,y$ index on the board represents what value is on the board at the time, $-1$ represents a white piece, $0$ an empty square, and $1$ a black piece.
+For a neural network to be able to use input, that input needs to be numeric. We model the board with a single $NxMx3$ array with two values $\{0,1\}$, where the first two indices on the $z$ axis represent the players, and the last layer on the $z$ axis represents which players turn it is. The first $Z$ index represents whites pawns, that is, each $x,y$ position on the board where white has a pawn that cell $x,y,0$ has the value $1$ otherwise it has $0$, and similarily on the second layer for the black player. The last $z$ layer, contains all $1$'s if it is the white players turn otherwise $0$.
 
-An action vector is coupled with each state, the action vector is a $3$-dimensional matrix where the lengths of the dimensions are $N * M * 6$ and each index of the matrix represents an action moving from cell $x,y$ moving to the direction $z$. The directions are as follows $0$ represents moving upwards and to the left diagonally on the board, $1$ upwards, and $2$ upwards and to the right diagonally, $4$ downwards and to the left diagonally, $5$ downwards, and lastly $6$ downwards and to the right diagonally.
+One of the outputs of the nerual network is the policy vector, the policy vector is a $3$-dimensional matrix where the lengths of the dimensions are $N * M * 6$ and each index of the matrix represents an action moving from cell $x,y$ moving to the direction $z$. The directions are as follows $0$ represents moving upwards and to the left diagonally on the board, $1$ upwards, and $2$ upwards and to the right diagonally, $4$ downwards and to the left diagonally, $5$ downwards, and lastly $6$ downwards and to the right diagonally. The cell values indicate the probability distribution of the neural network selecting that move. Importantly, before we select a move from the neural networks prediction we zero out the illegal moves, and renormalize the array such that it sums to $1$.
 
 \section{Neural Network Architecture}
 
-The neural network architecture we opted to use was a single convolutional layer with a ReLU activation function, followed by 5 residual layers each containing two layers of convolution, batch normalization, and a ReLu activation. Lastly, a split policy/value head, where the output of the last residual layer is split into two different outputs. The policy head are two layers: first a final convolutional layer, and then a fully connected layer with a \textit{log softmax} layer. The value head consists of three layers: first a convolutional layer, then a fully connected layer, and lastly a fully connected layer with a \textit{tanh} activation function. The Figure \ref{fig:nnarch}. depicts the architecture.
+The neural network architecture we opted to use was a single convolutional layer with a ReLU activation function, followed by 5 residual layers each containing two layers of convolution, batch normalization, and a ReLu activation. Lastly, a split policy/value head, where the output of the last residual layer is split into two different outputs. The policy head are two layers: first a final convolutional layer, and then a fully connected layer with a \textit{log softmax} layer. The value head consists of three layers: first a convolutional layer, then a fully connected layer, and lastly a fully connected layer with a \textit{tanh} activation function. Figure~\ref{fig:nnarch}. depicts the architecture. Using this architecture we end up with $1737986$ trainable parameters.
 
 \begin{figure}[]
     \centering
 
     \includegraphics[width=0.65\textwidth]{graphics/test}
-    
+
     \caption{Neural Network Architecture}
     \label{fig:nnarch}
 \end{figure}
 
 \subsection{Convolutional Layers}
 
-It is important to understand why we use convolutional layers when dealing with board games as convolution is often associated with an image. This is because a convolutional layer is focused on merging multiple input parameters to a single neuron, making it an input parameter for the next layer representing the locality around the center point of the original input. Playing the game of Breakthrough, a piece is only able to capture pieces in its immediate vicinity. This lead to the selection of a convolutional kernel with a size of $3x3$ and a stride of $1$.
+It is important to understand why we use convolutional layers when dealing with board games as convolution is more typically associated with an image. This is because a convolutional layer is focused on merging multiple input parameters to a single neuron, making it an input parameter for the next layer representing the locality around the center point of the original input. Playing the game of Breakthrough, a piece is only able to capture pieces in its immediate vicinity. This lead to the selection of a $3$-d convolutional kernel with a size of $3x3$ and a stride of $1$.
 
-The knowledge of each piece moves isn't enough to represent the whole game state within the neural network. This is why we use multiple residual layers with convolution. These residual layers stack convolutions on each other making the final convolution represent the locality of all the other localities, allowing the neural network to have a representation of the whole game state in its parameters.
+We require a global view of the board. This is why we use multiple residual layers with convolution. These residual layers stack convolutions on each other making the final convolution represent the locality of all the other localities, allowing the neural network to have a representation of the whole game state in its parameters.
+
 
 The selection of parameters was done for these reasons as well as to most closely resemble the architecture described in AlphaZero.
 
 \subsection{Residual Layers}
 
-The residual layers as a concept remember the output of the previous layer and add the results of the residual layer and the previous layer together. On a higher level, this leads to the internal representation of the neural network to maintain the whole game boards in its representation, s.t. two areas that are far away from each other maintain the same level of locality as two that are close.
+The residual layers as a concept remember the output of the previous layer and add together the results of the residual layer and the previous layer. On a higher level, this leads to the internal representation of the neural network to maintain the whole game boards in its representation, s.t. two areas that are far away from each other maintain the same level of locality as two that are close.
 
 Why we use a residual layer for applying a convolution layer multiple times is to gain locality of the whole game board. A residual layer applies a function like this $res(x) = x + l(x)$ where $l(x)$ is the function of the layer, commonly a convolutional layer.
 
@@ -51,58 +52,58 @@ The value head of the neural network returns a single value representing the pre
 
 \subsection{Implementation}
 
-This subsection focuses on the implementation of the various functions required to train the neural network to play breakthrough. The description is mainly through pseudo code, and the code is awailable on \href{github.com/sigurdurhelga/msc-cheis}{Github} for examination.
+This subsection focuses on the implementation of the various functions required to train the neural network to play Breakthrough. The description is mainly through pseudo-code, and the code is available on GitHub for examination~\cite{siggi:github}.
 
 \subsection{Self-play}
 
 \begin{algorithm}[t]
-\caption{Neural network selfplay pseudocode}
-\label{alg:selfplay}
-\begin{algorithmic}[1]
-\STATE \textbf{neural network} nn1 = randomizedInitialNN()
-\STATE \textbf{neural network} nn2 = randomizedInitialNN()
-\WHILE{\TRUE}
-    \STATE{dataset = \textbf{generate\_dataset}(nn1)}
-    \STATE{nn1.train\_on\_examples(dataset)}
-    \STATE{win\_rate = \textbf{compete}(nn1,nn2)}
-    \IF{win\_rate > $0.5$}
+    \caption{Neural network self-play pseudo-code}
+    \label{alg:selfplay}
+    \begin{algorithmic}[1]
+        \STATE \textbf{neural network} nn1 = randomizedInitialNN()
+        \STATE \textbf{neural network} nn2 = randomizedInitialNN()
+        \WHILE{\TRUE}
+        \STATE{dataset = \textbf{generate\_dataset}(nn1)}
+        \STATE{nn1.train\_on\_examples(dataset)}
+        \STATE{win\_rate = \textbf{compete}(nn1,nn2)}
+        \IF{win\_rate > $0.5$}
         \STATE{nn2 = nn1.copy()}
-    \ELSE
+        \ELSE
         \STATE{nn1 = nn2.copy()}
-    \ENDIF
-    \STATE \textbf{save}(nn1)
-\ENDWHILE
-\end{algorithmic}
+        \ENDIF
+        \STATE \textbf{save}(nn1)
+        \ENDWHILE
+    \end{algorithmic}
 \end{algorithm}
 
-To train the neural network to play Breakthrough we initialize two neural networks nn1 and nn2 with random weights. Then we let nn1 play against itself using MCTS with PUCT to select moves. We collect data from this self-play to train on. The data collected is $(s, \pi, \tau, p, v)$, $s$ is the state, $\pi$ is the action probability vector provided by MCTS with PUCT, $\tau$ the end reward for the episode $1$ if white wins, $-1$ if black wins. $p$ is the action probability vector predicted by the neural network, and $v$ is the predicted reward of the game by the neural network.
+To train the neural network to play Breakthrough we initialize two neural networks nn1 and nn2 with random weights. Then we let nn1 play against itself using MCTS with PUCT to select moves. We collect data from this self-play to train on. The data collected is $(s, \pi, \tau, p, v)$, where $s$ is the state, $\pi$ is the action policy vector provided by MCTS with PUCT, $\tau$ the end reward for the episode $1$ if white wins, $-1$ if black wins. $p$ is the policy vector predicted by the neural network, and $v$ is the predicted reward of the game by the neural network.
 
-The pseudocode can be seen in Algorithm~\ref{alg:selfplay}.
+The pseudo-code is shown as Algorithm~\ref{alg:selfplay}.
 
 \subsection{Compete}
 
 \begin{algorithm}[t]
-\caption{Neural network compete pseudocode}
-\label{alg:competition}
-\begin{algorithmic}[1]
-\STATE{\textbf{Input:} neural network nn1, neural network nn2}
-\STATE{\textbf{Output:} win rate for white player}
-\STATE{white\_wins $= 0$}
-\STATE{game = \textbf{initial\_breakthrough}()}
-\FOR{1 \TO 100}
-    \WHILE{\textbf{not} game.is\_termina()}
+    \caption{Neural network compete pseudo-code}
+    \label{alg:competition}
+    \begin{algorithmic}[1]
+        \STATE{\textbf{Input:} neural network nn1, neural network nn2}
+        \STATE{\textbf{Output:} win rate for white player}
+        \STATE{white\_wins $= 0$}
+        \STATE{game = \textbf{initial\_breakthrough}()}
+        \FOR{1 \TO 100}
+        \WHILE{\textbf{not} game.is\_termina()}
         \STATE{nn1.make\_move()}
         \STATE{nn2.make\_move()}
-    \ENDWHILE
-    \IF{game.white\_wins()}
+        \ENDWHILE
+        \IF{game.white\_wins()}
         \STATE{white\_wins++}
-    \ENDIF
-\ENDFOR
-\STATE{\textbf{return} white\_wins/100}
-\end{algorithmic}
+        \ENDIF
+        \ENDFOR
+        \STATE{\textbf{return} white\_wins/100}
+    \end{algorithmic}
 \end{algorithm}
 
-The compete function differs from the self-play function in such a way that we select the moves by a single pass through the neural network thereby only evaluating the neural networks ability to predict best actions. The pseudocode is available in Algorithm~\ref{alg:competition}.
+The compete function differs from the self-play function in such a way that we select the moves by a single pass through the neural network thereby only evaluating the neural networks ability to predict best actions. The pseudo-code shown as Algorithm~\ref{alg:competition}.
 
 \subsection{Loss Function}
 
@@ -114,9 +115,9 @@ In this section we describe the process of trainin a Concept Activation Vector i
 
 \subsection{Testing With Concept Activation Vectors}
 
-Once the neural network has learned to play the game of Breakthrough, we examine its internal state w.r.t HLC's that we understand. The first examined HLC is numbers advantage, that is, the number of pieces that a player has over his opponent. The higher-level idea to a human player would be that they are in a better position since they have more pieces.
+Once the neural network has learned to play the game of Breakthrough, we examine its internal state w.r.t HLC's that we understand. The first examined HLC is material advantage, that is, the number of pieces that a player has over the opponent. The higher-level idea to human players would be that they are in a better position since they have more pieces.
 
-To examine the higher-level component we take a look at the internal state of the neural network itself. To do this we take a state, we run the state through the neural network, and while the state is propagating through the network we select a layer to split the network, we call that layer $l_{split}$. At that point in time the state is a mutated vector $l_{split}(l_{split-1}(...l_0(state)))$ of the initial state. We save that vector as a point in the N-dimensional space that it represents, and once we've gathered enough points in that N-dimensional space we're able to train a linear classifier using the HLC as a label. We train a Stochastic Gradient Descent classifier, from the SKLearn library, to construct a hyperplane that splits the space into two binary states, one that contains the HLC and another that doesn't.
+To examine the higher-level component we take a look at the internal state of the neural network itself. To do this, we take a state, and run it through the neural network, and while the state is propagating through the network we select a layer to split the network, we call that layer $l_{split}$. At that point in time the state is a mutated vector $l_{split}(l_{split-1}(...l_0(state)))$ of the initial state. We save that vector as a point in the N-dimensional space that it represents, and once we've gathered enough points in that N-dimensional space we're able to train a linear classifier using the HLC as a label. We train a Stochastic Gradient Descent classifier, from the SKLearn library, to construct a hyper-plane that splits the space into two binary states, one that contains the HLC and another that doesn't.
 
 \begin{figure}[]
     \centering
@@ -125,7 +126,7 @@ To examine the higher-level component we take a look at the internal state of th
     \label{fig:scattersplit}
 \end{figure}
 
-An example of how this would look with only two dimensions is shown in Figure \ref{fig:scattersplit} Once we've successfully trained this linear classifier we can run another state $s$ through the neural network. Once the prediction has finished, we view the selected action $a$ of $s$ from the policy vector $p$ from the neural network. We view the loss of that selected action $a$. Then we apply the backpropagation algorithm up to that same layer $l_{split}$ and evaluate the gradient there. If that gradient moves in the direction of the HLC we say that the state includes the HLC, and doesn't if it moves away from the HLC.
+An example of how this would look with only two dimensions is shown in Figure \ref{fig:scattersplit}. Once we've successfully trained this linear classifier we can run another state $s$ through the neural network. Once the prediction has finished, we view the selected action $a$ of $s$ from the policy vector $p$ from the neural network. We view the loss of that selected action $a$. We then apply the backpropagation algorithm up to that same layer $l_{split}$ and evaluate the gradient there. If that gradient moves in the direction of the HLC we say that the state includes the HLC, and that it doesn't if the gradient moves away from the HLC.
 
 \begin{figure}[]
     \centering
@@ -134,6 +135,8 @@ An example of how this would look with only two dimensions is shown in Figure \r
     \label{fig:scattersplitarrow}
 \end{figure}
 
-We show an example in Figure \ref{fig:scattersplitarrow}. where the arrow in the image represents the direction the gradient is moving, if it moves toward the HLC the state $s$ includes the HLC otherwise it does not. Using this method we evaluate the internal representation of the state within the neural network and can see whether it recognizes the HLC. 
+We show an example in Figure \ref{fig:scattersplitarrow}, where the arrow in the image represents the direction the gradient is moving, if it moves toward the HLC the state $s$ includes the HLC otherwise it does not. Using this method we evaluate the internal representation of the state within the neural network and can see whether it recognizes the HLC.
 
+\section{Summary}
 
+In this chapter we described the architecture of the nerual network, including how we model Breakthrough to be able to learn how to play the game. We described the processes we use to learn completely by self play. In the following chapter we will evaluate the neural network.

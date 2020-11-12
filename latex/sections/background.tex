@@ -1,36 +1,36 @@
 \chapter{Background\label{cha:background}}
 
-In this chapter, we discuss traditional artificial intelligence in the context of search the algorithms we used, what some other similar methods exist as well as the field in general. We allocate a large portion of the section to Breakthrough as that will be the testbed for future sections
+In this chapter, we discuss traditional artificial intelligence in the context of search the algorithms we used, what some other similar methods exist as well as the field in general. We allocate a large portion of the section to Breakthrough as that will be the testbed for future sections. We discuss the different classes of machine learning as well as discuss neural networks in more depht.
 
 \section{Environments}
 \label{sec:environments}
 
-When researching Artificial Intelligence it is important to select an environment that is a suitable abstraction for the task at hand. Environments vary significantly and can be identified by their characteristic. The characteristics that are generally used to describe environments can be seen in Table~\ref{tab:env_characteristics}. \cite{Russell:AIModern}
+When researching Artificial Intelligence it is important to select an environment that is a suitable abstraction for the task at hand. Environments vary significantly and can be identified by their characteristic. The characteristics that are generally used to describe environments can be seen in Table~\ref{tab:env_characteristics}. This categorization of environments is described in the book Artificial Intelligence by Norvig \& Russell. \cite{Russell:AIModern}
 
-\begin{table}[h]
+\begin{table}[ht]
   \centering
   \begin{tabular}{|c|c|p{6cm}|}
     \hline
-    \textbf{characteristic} & \textbf{Values}              & \textbf{Description}                                                \\
+    \textbf{characteristic} & \textbf{Values}              & \textbf{Description}                                                                 \\
     \hline
-    Observable              & Fully, Partially             & How much of the environment can your agent percieve.                \\
+    Observable              & Fully, Partially             & How much of the environment can your agent percieve.                                 \\
     \hline
-    Agents                  & Single, Multi                & Are there multiple agents playing in the environment.               \\
+    Agents                  & Single, Multi                & Are there multiple agents playing in the environment.                                \\
     \hline
-    Deterministic           & Deterministic, Stochastic    & Do the actions your agent do deterministicly impact the environment \\
+    Deterministic           & Deterministic, Stochastic    & Do the actions your agent do deterministicly impact the environment.                 \\
     \hline
-    Episodic                & Sequential, Episodic         & Are actions episodic or sequential                                  \\
+    Episodic                & Sequential, Episodic         & Are actions episodic or sequential.                                                  \\
     \hline
-    Static                  & Static, Semi-Static, Dynamic & ehh                                                                 \\
+    Static                  & Static, Semi-Static, Dynamic & Does the environment without agent input, or does it wait until agents take actions. \\
     \hline
-    Discrete                & Discrete, Continuous         & Is your environment discrete w.r.t actions (does it end)            \\
+    Discrete                & Discrete, Continuous         & Is your environment discrete w.r.t actions.                                          \\
     \hline
   \end{tabular}
   \caption{Characteristics of environments}
   \label{tab:env_characteristics}
 \end{table}
 
-Categorizing environments like this gives you the power to find an environment in which a method works and know it can be applied to different environments with the same characteristics. Talk about agents in the context of environments as the entities that act within the environment. A game player is an agent as well as the neural network model that exists within a car that can drive in the real world.
+Categorizing environments like this gives you the power to find an environment in which a method works and know it can be applied to different environments with the same characteristics. Additionally, it allowes us to talk about agents in the context of environments as the entities that act within the environment.
 
 \section{Game Environment}
 
@@ -38,19 +38,19 @@ With classical Artificial Intelligence Game Environments are commonly used to va
 
 \section{Breakthrough}
 
-The game breakthrough is a simplified version of chess, the game is set up on a $MxN$ board with cells like in chess, and each player starts with two rows of pawns at either end. The objective of the game is to move one of the pawn pieces to the opposite end of the board. A player wins if either they have reached the opposite end of the board or have captured all of his opponents' pawns. The pawns differ from chess pawns in such a way that they can not move two squares on the first move and, they can move diagonally as well as forward, this leads to the game being impossible to draw as pieces are always able to move. An example of an initial board in breakthrough can be seen in Figure~\ref{fig:initbtboard}
+The game breakthrough is a simplified version of chess, the game is set up on a $MxN$ board with cells like in chess, and each player starts with two rows of pawns at either end. The objective of the game is for a player to move one of their pawns to the opposite end of the board. A player wins if either they have reached the opposite end of the board or have captured all of his opponents' pawns. The pawns differ from chess pawns in such a way that they can not move two squares on the first move and, they can move diagonally as well as forward, this leads to the game being impossible to draw as pieces are always able to move. An example of an initial board in breakthrough can be seen in Figure~\ref{fig:initbtboard}
 
 \begin{figure}[]
   \centering
 
   \breakthrough{8/8/pppppp2/pppppp2/8/8/PPPPPP2/PPPPPP2 w - - 0 1}
 
-  \caption{Example breakthrough board}
+  \caption{Initial breakthrough board}
   \label{fig:initbtboard}
 \end{figure}
 
 
-\begin{table}[h]
+\begin{table}[ht]
   \centering
   \begin{tabular}{|c|c|}\hline
     \textbf{Characteristic} & \textbf{Value} \\\hline
@@ -65,48 +65,40 @@ The game breakthrough is a simplified version of chess, the game is set up on a 
   \label{tab:breakthrough_cat}
 \end{table}
 
-Categorizing Breakthrough with the characteristics described in Section \ref{sec:environments}. We end up with the description
-shown in Table \ref{tab:breakthrough_cat}. These characteristics are identical to that of Tic-Tac-Toe, and Chess.
-This categorization is the most common in board games where two player compete.
-
 Categorizing Breakthrough with the characteristics described in Section~\ref{sec:environments}. We end up with the description shown in Table~\ref{tab:breakthrough_cat}. These characteristics are identical to that of Tic-Tac-Toe, and Chess. This categorization is the most common in board games where two-player compete.
 
 \subsection{Heuristics of Breakthrough}
 
-To evaluate the game of Breakthrough we can consider many heuristics (higher-level concepts) for instance a very simple heuristic would be the number of pieces each player has left. This heuristics gives us some insight into how well the game is progressing, but obviously, there are cases where this doesn't tell us much, as in cases when your opponent has a single piece left that is on the row immediately before the row needed for him to win. No matter how many pieces you have left, this state is bad for you if you're not able to capture that piece. An example of such a state can be seen in Figure~\ref{fig:bt_h1_bad}.
+To evaluate the game of Breakthrough we can consider many heuristics (higher-level concepts) for instance a very simple heuristic would be a players Material Advantage. Material Advantage is the amount of pieces the player has minus the amount of pieces the opponent has. This heuristics gives us some insight into how well the game is progressing, but obviously, there are cases where this doesn't tell us much, as in cases when your opponent has a single piece left that is on the row immediately before the row needed for him to win. No matter how many pieces you have left, this state is bad for you if you're not able to capture that piece. An example of such a state can be seen in Figure~\ref{fig:bt_h1_bad}.
 
 \begin{figure}[]
   \centering
-  \breakthrough{8/8/pppp4/pp3P2/2p5/8/8/PPP5 w - - 0 1}
-  \caption{Breakthrough board where Heuristic 1 doesn't work well}
+  \breakthrough{8/8/pppp4/pp3P2/2p5/8/8/8 w - - 0 1}
+  \caption{Breakthrough board where Material Advantage doesn't work well}
   \label{fig:bt_h1_bad}
 \end{figure}
 
-A different heuristic would be the distance of your most advanced pawn minus your opponents most advanced pawn, this heuristic could give you insight into how close you are to winning the game or how close your opponent is. As a higher-level concept, we can call this concept your aggressiveness, as it closely resembles how aggressive you are going for in for the win. Generally, in Breakthrough, it is favorable to move your whole team as a unit and play more defensively, so this heuristic is probably not one that will lead to the most wins.
+A different heuristic would be the distance of your most advanced pawn minus your opponents most advanced pawn, this heuristic could give you insight into how close you are to winning the game or how close your opponent is. As a higher-level concept, we can call this concept your aggressiveness, as it closely resembles how aggressive you are going for in for the win. Generally, in Breakthrough, it is favorable to move your whole team as a unit and play more defensively, and additional heuristics for Breakthrough will be discussed in detail later in this research.
 
 \section{State-Space Search}
 
-Traditionally methods for playing games were searching through the environment using a heuristic to guide the search. A simple way of doing a heuristic-based search would be to give all states a $0$ as a score and give states where you win a positive score. We say that that search algorithm is not guided, and the algorithm will probably have to evaluate every state in the state-space. This method of searching is generally extremely inefficient as the state-spaces of game environments are often extremely large, and sometimes infinite. For instance, an estimate of the state-space for breakthrough is $M * N * 2^{N*4}$ where $M$ is the height of the board $N$ is the width of the board. The $2^{N*4}$ represents each piece either being alive or captured. So for a small board, $5x4$ the upper-bound estimation of the state-space is $1310720$ states.
+Traditionally methods for playing games were searching through the environment using a heuristic to guide the search. A simple way of doing a heuristic-based search would be to give all states a $0$ as a score and give states where you win a positive score. We say that that search algorithm is not guided, and the algorithm will probably have to evaluate every state in the state-space. This method of searching is generally extremely inefficient as the state-spaces of game environments are often extremely large, and sometimes infinite. For instance, an upper-bound estimate of the state-space for breakthrough is $3^{(M-1)*(N-1)}+2*N$ where $M$ is the height of the board $N$ is the width of the board. The $3^{(M-1)*(N-1)}$ represents each position of the board having either a white, or black piece, or being empty. So for a small board, $5x4$ the upper-bound estimation of the state-space is $531,449$ states.
 
-This is why a good heuristic is very valuable because we can disregard all states $S'$ that result from doing a move $a$ in state $S$ as they will only lead to worse outcomes.
+This is why a good heuristic is very valuable because we can disregard all following states that result from doing a move some in a previous state as they will only lead to worse outcomes.
 
 The algorithms that are used in traditional state-space searches are for instance Depth-first search (DFS), Breadth-first Search (BFS), Alpha-Beta Pruning Search (AB-Search), and Monte-Carlo Tree Search (MCTS).
 
-More modernly, these search methods have been amplified by Machine Learning, in such a way that we do not need to figure out a good heuristic for a given state, but rather, we apply a machine learning model to learn a function that takes in a state and returns an evaluation of that state. This can lead to a significant time reduction as we do not need to simulate a whole game from a state to receive its evaluation we rather receive the evaluation from the model.
+More modernly, these search methods have been amplified by Machine Learning, in such a way that we do not need to figure out a good heuristic for a given state, but rather, we apply a machine learning model to learn a function that takes in a state and returns an evaluation of that state.\cite{neuralnetworksgames:michulke} This can lead to a significant time reduction as we do not need to simulate a whole game from a state to receive its evaluation we rather receive the evaluation from the model.
 
 \subsection{Monte-Carlo Tree Search}
 
 \label{sec:mcts}
 
-In the algorithm Monte-Carlo Tree Search, there is an agent within some environment. Where each node in the environment represents a state-action pair of the environment, by state-action pair what is meant it is some state and the action that brought the agent to that state. This pair should be unique within the environment. We will discuss these concepts within game-environments and therefore we might say player instead of agent and game instead of the environment.
-
-MCTS is a method of exploring an environment in a randomized manner (Monte Carlo is the term implying
-randomness). In MCTS there are four stages. Selection, Expansion, Simulation, and Back-propagation. They happen sequentially
-and repeatedly. MCTS is initialized with a tree consisting of the unexpanded initial state of the environment.
+In the algorithm Monte-Carlo Tree Search, there is an agent within some environment. Where each node in the environment represents a state-action pair of the environment, by state-action pair what is meant it is some state and the action that brought the agent to that state. This pair should be unique within the environment.
 
 MCTS is a method of exploring an environment in a randomized manner (Monte Carlo is the term implying randomness). In MCTS there are four stages. Selection, Expansion, Simulation, and Back-propagation. They happen sequentially and repeatedly. MCTS is initialized with a tree consisting of the unexpanded initial state of the environment.
 
-In MCTS there is a tree representing the game-environment. This tree consists of nodes $n_i$ where $i$ represents the point in time of the node, for example, $N_0$ in chess is the initial position and $N_x$ is some position in the middle of the game and $N_e$ is one of the states representing a position where there is either a draw or one player has won the match. Each of the nodes has $4$ values, $s$, $a$, $Q$, and $N$. These values represent these items, $s$ is the state of the environment, $a$ is the action that brought the previous node $n_(i-1)$ to node $n_i$, $Q$ is the average value of the node (value meaning the outcome of the game), and $N$ the number of times the MCTS algorithm has visited this node. The values $s$ and $a$ uniquely identify a position in the environment and are often called state-action pairs.
+In MCTS there is a tree representing the game-environment. This tree consists of nodes $n_i$ where $i$ represents the point in time of the node, for example, $N_0$ in chess is the initial position and $N_x$ is some position in the middle of the game and $N_e$ is one of the states representing a position where there is either a draw or one player has won the match. Each of the nodes has $4$ values, $s$, $a$, $Q$, and $N$. These values represent these items, $s$ is the state of the environment, $a$ is the action that brought the previous node $n_{i-1}$ to node $n_i$, $Q$ is the average reward from running the MCTS algorithm from this node, and $N$ the number of times the MCTS algorithm has visited this node. The values $s$ and $a$ uniquely identify a position in the environment and are often called state-action pairs.
 
 The MCTS algorithms four phases
 \begin{enumerate}
@@ -129,15 +121,10 @@ node is found. This process is done to balance the amount of exploration vs expl
 tree.
 
 \subsection*{Expansion}
-Then the expansion phase expands the node generating all of $(s,a)$'s children $(s',a')$ are generated
-and connected to $(s,a)$. This is done by applying all actions $a'$ to $(s,a)$. These children are the
-product of applying each action $a'$ to $s$ in the parent node.
+Then the expansion phase expands the node generating all of $(s,a)$'s children, $(s',a')$ are generated by applying all actions $a'$ in $(s,a)$.
 
 \subsection*{Rollout}
-Next during rollout actions from $(s,a)$ are randomly selected to move to $(s',a')$, then repeated
-to go to $(s'',a'')$, until a terminal node within the environment is reached. By terminal, we mean a
-state in which the game is finished. A terminal node in MCTS can generally return any value, but in the
-context of this paper, we only return (+1 white wins, -1 black wins, 0 draw).
+Next during rollout, actions from $(s,a)$ are randomly selected to move to $(s',a')$, then repeated to go to $(s'',a'')$, until a terminal node within the environment is reached. By terminal, we mean a state in which the game is finished. A terminal node in MCTS can generally return any value, but in the context of this paper, we only return (+1 white wins, or -1 black wins).
 
 
 \subsection*{Backpropagation}
@@ -145,13 +132,11 @@ The result from the terminal node is then propagated up through the path taken b
 to the root of the tree, updating the $Q_{(s,a)}$ values of each node $(s,a)$.
 
 When training a neural network the UCT formula is modified slightly to prefer selecting nodes
-that the neural network values highly by introducing a second scalar to the formula $f(s,a) = (p,v)$,
-the resulting formula is described in Equation \ref{PUCT_formula}, and is called PUCT. Secondly, the backpropagation process
-is modified to instead of doing rollout/simulation to receive a reward the predicted value $v$ from
-the neural network is used instead.
+that the neural network values highly by introducing a second scalar to the formula $f((s,a)) = (p,v)$, where $f$ is the neural network, $p$ is the policy vector returned by the neural network and $v$ is the predicted value from the neural network. The resulting formula is described in Equation \ref{PUCT_formula}, and is called PUCT. Secondly, the backpropagation process
+is modified to instead of doing rollout/simulation to receive a reward the predicted value $v$ from the neural network is used instead.
 
 \begin{equation} \label{PUCT_formula}
-  \text{Child PUCT value} = \frac{Q_{(s',a')}}{N_{(s',a')}} + c_{uct} * P((s,a)) * \frac{\sqrt{log(N_{(s,a)})}}{N_{(s',a')}}
+  \text{Child PUCT value} = \frac{Q_{(s',a')}}{N_{(s',a')}} + c_{uct} * p_{(s,a)} * \frac{\sqrt{log(N_{(s,a)})}}{N_{(s',a')}}
 \end{equation}
 
 \section{Machine Learning}
@@ -198,7 +183,10 @@ The field of XAI research is still very far behind its counterpart AI research, 
 
 \subsection{Model Interpretability}
 
+Model Interpretability is the more common approach of XAI, as it is
+
 \subsubsection{Saliency Maps}
+
 Within XAI many methods have been developed to try to evaluate
 ANN's, these methods are often referred as model interpretability methods.
 In the field image recognition there has been a lot of work examining which
@@ -221,7 +209,7 @@ lacks severely when your input is not an image.
 \subsubsection{Shapley Values}
 
 Methods for explaining models that aren't image recognition models include
-shapley values, from the Lundberg \& Lee\cite{LundbergL:shapley}. There the input is examined against it's output, then iteratively
+Shapley values, from the Lundberg \& Lee\cite{LundbergL:shapley}. There the input is examined against it's output, then iteratively
 input values are selected to be fixed. Then the other input values are varied and
 an average change in prediction is calculated. With this the shapley value can be
 estimated for the fixed input value. This is done to examine which input values have
