@@ -86,7 +86,7 @@ Traditionally methods for playing games were searching through the environment u
 
 This is why a good heuristic is very valuable because we can disregard all following states that result from doing a move some in a previous state as they will only lead to worse outcomes.
 
-The algorithms that are used in traditional state-space searches are for instance Depth-first search (DFS), Breadth-first Search (BFS), Alpha-Beta Pruning Search (AB-Search), and Monte-Carlo Tree Search (MCTS).
+The algorithms that are used in traditional state-space searches are for instance Depth-first search (DFS), Breadth-first Search (BFS), Alpha-Beta Pruning Search (AB-Search)\cite{abpruning:dj}, and Monte-Carlo Tree Search (MCTS).
 
 More modernly, these search methods have been amplified by Machine Learning, in such a way that we do not need to figure out a good heuristic for a given state, but rather, we apply a machine learning model to learn a function that takes in a state and returns an evaluation of that state.\cite{neuralnetworksgames:michulke} This can lead to a significant time reduction as we do not need to simulate a whole game from a state to receive its evaluation we rather receive the evaluation from the model.
 
@@ -94,7 +94,7 @@ More modernly, these search methods have been amplified by Machine Learning, in 
 
 \label{sec:mcts}
 
-In the algorithm Monte-Carlo Tree Search, there is an agent within some environment. Where each node in the environment represents a state-action pair of the environment, by state-action pair what is meant it is some state and the action that brought the agent to that state. This pair should be unique within the environment.
+In the algorithm Monte-Carlo Tree Search described by R. Coulom \cite{mcts:coulom}, there is an agent within some environment. Where each node in the environment represents a state-action pair of the environment, by state-action pair what is meant it is some state and the action that brought the agent to that state. This pair should be unique within the environment.
 
 MCTS is a method of exploring an environment in a randomized manner (Monte Carlo is the term implying randomness). In MCTS there are four stages. Selection, Expansion, Simulation, and Back-propagation. They happen sequentially and repeatedly. MCTS is initialized with a tree consisting of the unexpanded initial state of the environment.
 
@@ -166,16 +166,13 @@ Reinforcement Learning is where a model learns from experience. That is, the not
 % When doing moving it's parameters in the direction of the recieved output
 % from the environment.
 
-Many algorithms are popular in reinforcement learning, for instance Q-learning(CITE ME), CARLA (CITE ME),
-and many others.
+Many algorithms are popular in reinforcement learning, for instance Q-learning\cite{qlearning:watkins}, and many others.
 
 \subsection{Neural Networks}
 
 Neural networks (NN) are popular methods within a sub-field of ML which is called Deep Learning (DL).
 NN's are created to resemble how the human brain functions. In the brain, we have neurons which when they get a signal they apply some function to them and if the resulting signal is high enough, they fire to the next neuron. This is how it is done in the neural network model as well.
 There we have neurons that when they get some input, generally a vector of numbers. The neuron takes the sum of that vector, weighs the sum by a constant, then applies a non-linear activation function to it. The result of doing this is then passed on to the next neuron. Until a final layer of neurons is reached. At that point, we have a value that the neural network corresponds to the input value. This value can be a binary classification (cat or dog image), a regression value (the value of a property), or any number of outputs. It can then be said that a neural network is doing a function approximation of the input to some value. $f_n ( w_n * f_{n-1} (w_{n-1} * \dots f_0(w_0*i))) = o$.
-
-Neural networks are machine learning models that take in as input anything numerical and they apply continuous differentiable functions to that input s.t. they end with some output. This output is then compared to the expected output the difference between these outputs is called a loss. A loss is backpropagated through the neural network, and each function is derived to find its slope. We can then modify the weights of the neural network in the direction of the correct output. Leading to a function approximation of this function $f_{neuralnetwork}(X_{input}) = O_{expectedoutput}$
 
 \section{Explainable Artificial Intelligence (XAI)}
 
@@ -240,9 +237,7 @@ afterwards the model is examined to determine exactly what led to the predicted 
 This concept is simple when we're working with Decision Trees. A decision tree is a tree
 whose nodes are representative of an input value and at every node a branch is selected
 based on the value of the input value. It is therefore easy to see how to examine the tree
-to explain the output. We just follow the branches in the tree. That being said the branches
-are created by algorithms like ID3 which construct branches based on the initial dataset used
-to construct the tree, but again ID3 follows simple statistics and can be explained properly.
+to explain the output. We just follow the branches in the tree.
 
 
 When we talk about neural networks this process is much more difficult, the underlying nodes
