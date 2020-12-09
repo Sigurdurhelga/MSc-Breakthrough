@@ -1,6 +1,6 @@
 \chapter{Background\label{cha:background}}
 
-In this chapter, we discuss traditional artificial intelligence in the context of search the algorithms we used, what some other similar methods exist as well as the field in general. We allocate a large portion of the section to Breakthrough as that will be the testbed for future sections. We discuss the different classes of machine learning as well as discuss neural networks in more depht.
+In this chapter, we discuss traditional artificial intelligence in the context of search, the algorithms we used, what some other similar methods exist as well as the field in general. We allocate a large portion of the section to Breakthrough as that will be the testbed for future sections. We discuss the different classes of machine learning as well as neural networks in more depth.
 
 \section{Environments}
 \label{sec:environments}
@@ -34,11 +34,11 @@ Categorizing environments like this gives you the power to find an environment i
 
 \section{Game Environment}
 
-With classical Artificial Intelligence Game Environments are commonly used to validate a method, game environments can be games like Tic-Tac-Toe, Breakthrough, and driving simulators. Game environments are a suitable place to apply AI as they serve an important function as an abstraction of the real world, for instance, a self-driving car agent who is verified to avoid driving into walls in a simulation is possibly safer than one who is not.
+Classical Artificial Intelligence Game Environments are commonly used to validate a method, e.g game environments can be games like Tic-Tac-Toe, Breakthrough, and driving simulators. Game environments are a suitable place to apply AI as they serve as an abstraction of the real world, for instance, a self-driving car agent who is verified to avoid driving into walls in a simulation is possibly safer than one who is not.
 
 \section{Breakthrough}
 
-The game breakthrough is a simplified version of chess, the game is set up on a $MxN$ board with cells like in chess, and each player starts with two rows of pawns at either end. The objective of the game is for a player to move one of their pawns to the opposite end of the board. A player wins if either they have reached the opposite end of the board or have captured all of his opponents' pawns. The pawns differ from chess pawns in such a way that they can not move two squares on the first move and, they can move diagonally as well as forward, this leads to the game being impossible to draw as pieces are always able to move. An example of an initial board in breakthrough can be seen in Figure~\ref{fig:initbtboard}
+The game Breakthrough is a simplified version of chess; the game is set up on a $MxN$ board with squares like in chess, and each player starts with two rows of pawns at opposite ends. The objective of the game is for a player to move one of their pawns to the opposite end of the board. A player wins if either they have reached the opposite end of the board or have captured all of his opponents' pawns. The pawns differ from chess pawns in such a way that they can not move two squares on the first move and, they can move diagonally as well as forward. This leads to the game being impossible to draw as pieces are always able to move. An example of an initial board in Breakthrough can be seen in Figure~\ref{fig:initbtboard}
 
 \begin{figure}[]
   \centering
@@ -65,11 +65,11 @@ The game breakthrough is a simplified version of chess, the game is set up on a 
   \label{tab:breakthrough_cat}
 \end{table}
 
-Categorizing Breakthrough with the characteristics described in Section~\ref{sec:environments}. We end up with the description shown in Table~\ref{tab:breakthrough_cat}. These characteristics are identical to that of Tic-Tac-Toe, and Chess. This categorization is the most common in board games where two-player compete.
+Categorizing Breakthrough with the characteristics described in Section~\ref{sec:environments}. We end up with the description shown in Table~\ref{tab:breakthrough_cat}. These characteristics are identical to that of Tic-Tac-Toe, and chess. This categorization is the most common in board games where two-player compete.
 
 \subsection{Heuristics of Breakthrough}
 
-To evaluate the game of Breakthrough we can consider many heuristics (higher-level concepts) for instance a very simple heuristic would be a players Material Advantage. Material Advantage is the amount of pieces the player has minus the amount of pieces the opponent has. This heuristics gives us some insight into how well the game is progressing, but obviously, there are cases where this doesn't tell us much, as in cases when your opponent has a single piece left that is on the row immediately before the row needed for him to win. No matter how many pieces you have left, this state is bad for you if you're not able to capture that piece. An example of such a state can be seen in Figure~\ref{fig:bt_h1_bad}.
+To evaluate the game of Breakthrough we can consider many heuristics (higher-level concepts) for instance a very simple heuristic would be a players material advantage. \textit{Material Advantage} is the amount of pieces the player has minus the amount of pieces the opponent has. This heuristics gives us some insight into how well the game is progressing, but obviously, there are cases where this doesn't tell us much, as in cases when your opponent has a single piece left that is on the row immediately before the row needed for him to win. No matter how many pieces you have left, this state is bad for you if you're not able to capture that piece. An example of such a state can be seen in Figure~\ref{fig:bt_h1_bad}.
 
 \begin{figure}[]
   \centering
@@ -78,11 +78,11 @@ To evaluate the game of Breakthrough we can consider many heuristics (higher-lev
   \label{fig:bt_h1_bad}
 \end{figure}
 
-A different heuristic would be the distance of your most advanced pawn minus your opponents most advanced pawn, this heuristic could give you insight into how close you are to winning the game or how close your opponent is. As a higher-level concept, we can call this concept your aggressiveness, as it closely resembles how aggressive you are going for in for the win. Generally, in Breakthrough, it is favorable to move your whole team as a unit and play more defensively, and additional heuristics for Breakthrough will be discussed in detail later in this research.
+A different heuristic would be the distance of your most advanced pawn minus your opponent's most advanced pawn; this heuristic could give you insight into how close you are to winning the game or how close your opponent is. As a higher-level concept, we can call this concept your aggressiveness, as it closely resembles how aggressive you are going for the win. Generally, in Breakthrough, it is favorable to move your whole team as a unit and play more defensively. Additional heuristics for Breakthrough will be discussed in detail later in this research.
 
 \section{State-Space Search}
 
-Traditionally methods for playing games were searching through the environment using a heuristic to guide the search. A simple way of doing a heuristic-based search would be to give all states a $0$ as a score and give states where you win a positive score. We say that that search algorithm is not guided, and the algorithm will probably have to evaluate every state in the state-space. This method of searching is generally extremely inefficient as the state-spaces of game environments are often extremely large, and sometimes infinite. For instance, an upper-bound estimate of the state-space for breakthrough is $3^{(M-1)*(N-1)}+2*N$ where $M$ is the height of the board $N$ is the width of the board. The $3^{(M-1)*(N-1)}$ represents each position of the board having either a white, or black piece, or being empty. So for a small board, $5x4$ the upper-bound estimation of the state-space is $531,449$ states.
+Traditionally, methods for playing games search through the environment using a heuristic to guide the search. A simple way of doing a heuristic-based search would be to give all non-terminal states a $0$ score and terminal states positive or negative scores based on whether it is a inw or a loss, repesctively. We say that that a search algorithm is not guided, and the algorithm will probably have to evaluate a large portion of the state-space. This method of searching is generally extremely inefficient as the state-spaces of game environments are often extremely large, even infinite. For instance, an upper-bound estimate of the state-space for Breakthrough is $3^{(M-1)*(N-1)}+2*N$ where $M$ is the height of the board $N$ is the width of the board. The $3^{(M-1)*(N-1)}$ represents each position of the board having either a white, or black piece, or being empty. And, the $2*N$ component represents each square the final piece to move could have moved to. So for a small board, $5x4$ the upper-bound estimation of the state-space is $531,449$ states.
 
 This is why a good heuristic is very valuable because we can disregard all following states that result from doing a move some in a previous state as they will only lead to worse outcomes.
 
@@ -94,7 +94,7 @@ More modernly, these search methods have been amplified by Machine Learning, in 
 
 \label{sec:mcts}
 
-In the algorithm Monte-Carlo Tree Search described by R. Coulom \cite{mcts:coulom}, there is an agent within some environment. Where each node in the environment represents a state-action pair of the environment, by state-action pair what is meant it is some state and the action that brought the agent to that state. This pair should be unique within the environment.
+In the algorithm Monte-Carlo Tree Search described by R. Coulom\cite{mcts:coulom}, there is an agent within some environment. Where each node in the environment represents a state-action pair of the environment, by state-action pair what is meant it is some state and the action that brought the agent to that state. This pair should be unique within the environment.
 
 MCTS is a method of exploring an environment in a randomized manner (Monte Carlo is the term implying randomness). In MCTS there are four stages. Selection, Expansion, Simulation, and Back-propagation. They happen sequentially and repeatedly. MCTS is initialized with a tree consisting of the unexpanded initial state of the environment.
 
@@ -141,11 +141,11 @@ is modified to instead of doing rollout/simulation to receive a reward the predi
 
 \section{Machine Learning}
 
-Machine Learning (ML) is a research field in which machines apply statistical functions on data to achieve a correct output, by \textit{correct} we mean the corresponding result which we expect. Generally, this a repetitive process where we look at examples of the data, and the algorithm progressively gets closer to the underlying function of the data it is fed. This process is therefore similar to trial and error for humans. ML is a sub-field of Artificial Intelligence. ML algorithms come in the form of two classes \textit{Classification}, where the algorithm should find a class representing the data it is given, and \textit{Regression} where the algorithm should find an underlying continuous numerical function and will return a numerical value representing the input.
+Machine Learning (ML) is a research field in which machines apply statistical functions on data to achieve a correct output, by \textit{correct} we mean the corresponding result which we expect. Generally, this a repetitive process where we look at examples of the data, and the algorithm progressively gets closer to the underlying function of the data it is fed. This process is therefore similar to trial and error for humans. ML is a sub-field of Artificial Intelligence. ML algorithms try to achieve one of two classes, \textit{Classification}, where the algorithm should find a class representing the data it is given, and \textit{Regression} where the algorithm should find an underlying continuous numerical function and will return a numerical value representing the input.
 
 Typically ML can be viewed in three different groups, Supervised Learning, Reinforcement Learning (RL), and Unsupervised Learning. Where in Supervised Learning, the algorithm is given data examples and their corresponding outcome. For example, a supervised learning algorithm could be provided with data regarding the weather and the corresponding temperature, the algorithm should then find a pattern within the weather data and find the continuous function represented by the data. This would then be an example of a regression task. Flipping thing example around, if the algorithm would just be provided the temperature and it should tell us whether it is sunny outside or not, that would be a classification task.
 
-In RL the algorithm is given only some input, and then the algorithm tries some outcome generally actions in some environment. Then over an episode~\footnote{a series of outcomes / a timespan} once the episode is finished some reward is given. The algorithm will then learn whether the actions were good actions from the reward. Examples of this are agents playing a game like Flappy Bird, where the data they are given is the state of the game, and they try to either jump or not jump.
+% In RL the algorithm is given only some input, and then the algorithm tries some outcome generally actions in some environment. Then over an episode~\footnote{a series of outcomes / a timespan} once the episode is finished some reward is given. The algorithm will then learn whether the actions were good actions from the reward. Examples of this are agents playing a game like Flappy Bird, where the data they are given is the state of the game, and they try to either jump or not jump.
 
 %Machine learning (ML) focuses on the using of data and a corresponding outcome w.r.t that data to 
 %extrapolate some underlying function of that data. Examples of how we use machine learning is for instance the ability to predicting the 
@@ -158,21 +158,27 @@ In RL the algorithm is given only some input, and then the algorithm tries some 
 
 \subsection{Supervised Learning}
 
-In supervised learning, the data and their corresponding outcomes are already available to us. Examples of the data we can use in supervised learning would be labeled images.
+In Supervised Learning, the ML algorithms attempt to build a model from a data set of labelled examples. The labelled examples are a set of input values and their corresponding output value. The ML algorithm then uses this data set to construct a model that is as accurate as possible at outputting the correct output value given the input value. In supervised learning many techniques are applied to maintain the generality of the model s.t. it does not just represent the data set it is given but also has high accuracy on a possible future data set it has not yet encountered.
+
+Some examples of algorithms that are popular for Supervised learning would be, Decision Trees, Support Vector Machines, or Naive Bayes.
 
 \subsection{Reinforcement Learning}
 
-Reinforcement Learning is where a model learns from experience. That is, the notion of input/output values changes, the model uses itself to generate input values by acting in an environment. The environment then returns some result, that could be losing in a game, making a correct prediction, or any number of outcomes. The result is then propagated through the model allowing it to improve with this new information.
-% When doing moving it's parameters in the direction of the recieved output
-% from the environment.
+Reinforcement Learning focuses on the idea of trial and error for an ML algorithm, where the algorithm directly interacts with the environment it operates in, and from operating in the environment it is provided with either positive or negative feedback for it's actions. Typically, the environment needs to be modeled as a Markov Decision Process. That is, the selection of actions in a state requires only the knowledge of being in that state, not the actions it took to get to that state.
 
 Many algorithms are popular in reinforcement learning, for instance Q-learning\cite{qlearning:watkins}, and many others.
+
+\subsection{Unsupervised Learning}
+
+In Unsupervised Learning, the machine learning algorithms attempt to build a model from a data set of values that don't have a corresponding output value. These algorithms then generally attempt to find pattern within the data set, to which we could then later label upon examination of the patterns. Importantly, in Unsupervised Learning, all columns of values in the data set should be normalized to the same range, and should be standardized s.t. the mean of the values is $0$ and it's standard deviation is $1$. This is done in order for one value not to dominate the patterns in the data set.
+
+Common algorithms in Unsupervised Learning are, K-Nearest Neighbours (KNN), K-Means\cite{lloyd:kmeans}, and DBScan\cite{ling:dbscan}.
 
 \subsection{Neural Networks}
 
 Neural networks (NN) are popular methods within a sub-field of ML which is called Deep Learning (DL).
 NN's are created to resemble how the human brain functions. In the brain, we have neurons which when they get a signal they apply some function to them and if the resulting signal is high enough, they fire to the next neuron. This is how it is done in the neural network model as well.
-There we have neurons that when they get some input, generally a vector of numbers. The neuron takes the sum of that vector, weighs the sum by a constant, then applies a non-linear activation function to it. The result of doing this is then passed on to the next neuron. Until a final layer of neurons is reached. At that point, we have a value that the neural network corresponds to the input value. This value can be a binary classification (cat or dog image), a regression value (the value of a property), or any number of outputs. It can then be said that a neural network is doing a function approximation of the input to some value. $f_n ( w_n * f_{n-1} (w_{n-1} * \dots f_0(w_0*i))) = o$.
+There we have neurons that when they get some input, generally a vector of numbers. The neuron takes the sum of that vector, weighs the sum by a constant, then applies an activation function to it. The result of doing this is then passed on to the next neuron. Until a final layer of neurons is reached. At that point, we have a value that the neural network corresponds to the input value. This value can be a binary classification (cat or dog image), a regression value (the value of a property), or any number of outputs. It can then be said that a neural network is doing a function approximation of the input to some value. And, would be mathematically stated as $f_n ( w_n * f_{n-1} (w_{n-1} * \dots f_0(w_0*i))) = o$.
 
 \section{Explainable Artificial Intelligence (XAI)}
 
@@ -180,18 +186,30 @@ The field of XAI research is still very far behind its counterpart AI research, 
 
 \subsection{Model Interpretability}
 
-Model Interpretability is the more common approach of XAI, as it is
+Model Interpretability is the more common approach of XAI, mainly because it is less constrained than model explainability. In order to achieve model interpretability, we must be able to answer the question of what prediction will the model return on a given input, with a high accuracy. Simple examples would be, given a trained neural network and a picture of a dog, if that model is highly interpretable, we can say with high certainty that the predicted value will be dog.
 
-\subsubsection{Saliency Maps}
+\subsection{Model Explainability}
+
+Model explainability within the context of neural networks isn't possible today. Model
+explainability referrs to firstly considering some input and output from a model. Then
+afterwards the model is examined to determine exactly what led to the predicted output.
+This concept is simple when we're working with Decision Trees. A decision tree is a tree
+whose nodes are representative of an input value and at every node a branch is selected
+based on the value of the input value. It is therefore easy to see how to examine the tree
+to explain the output, by following the branches in the tree we can exactly explain why the model predicted the output.
+
+When we talk about neural networks this process is much more difficult, the underlying nodes
+are generally in the millions, the different layers of the neural network vary in the operations they apply to the input. During this process, the value is modified such that becomes far removed from the initial input value. That being said, while the possibility of completely monitoring the training process and completely monitoring the evaluation process is truly possible it is not feasible.
+
+
+\subsection{Saliency Maps}
 
 Within XAI many methods have been developed to try to evaluate
-ANN's, these methods are often referred as model interpretability methods.
-In the field image recognition there has been a lot of work examining which
-pixels of an image the model deems important. Arguably the most popular
-method for this is Saliency Maps\cite{Koch:saliency}. There the pixel values the model
+ANN's. In the field image recognition there has been a lot of work examining which
+pixels of an image the model deems important. One such method is, Saliency Maps\cite{Koch:saliency}. There the pixel values the model
 deems important are colored in s.t. a human can examine the image and get a
 sense of what portions of the image are important to the model, an example of
-a classification of a dog can be seen in Figure \ref{fig:dog_saliency}.
+a classification of a dog can be seen in Figure \ref{fig:dog_saliency}. This method is understandable to a human when the saliency map lines up to what we would focus on. However, this achieves no explanation on the prediction if the saliency map doesn't line up to human intuition or the prediction, for example, if in the same Figure\ref{fig:dog_saliency} we had the same saliency map but the prediction would be dragon, or if the salience map was on the trees and the prediction was dog.
 
 \begin{figure}[]
   \centering
@@ -200,10 +218,7 @@ a classification of a dog can be seen in Figure \ref{fig:dog_saliency}.
   \label{fig:dog_saliency}
 \end{figure}
 
-While this method is understandable in the context of image recognition it
-lacks severely when your input is not an image.
-
-\subsubsection{Shapley Values}
+\subsection{Shapley Values}
 
 Methods for explaining models that aren't image recognition models include
 Shapley values, from the Lundberg \& Lee\cite{LundbergL:shapley}. There the input is examined against it's output, then iteratively
@@ -213,9 +228,9 @@ estimated for the fixed input value. This is done to examine which input values 
 the strongest link to the output value. Shapley values on a dataset can give insights
 on which input values the model deems important.
 
-\subsubsection{Concept Activation Vectors}
+\subsection{Concept Activation Vectors}
 
-A recent paper by Been Kim Et. al \cite{Keem:TCAV}, shows a method for examining
+A recent paper by Been Kim et al.\cite{Keem:TCAV}, shows a method for examining
 a neural network giving a much more human insight into a prediction. Using Concept
 Activation Vectors (CAV) a directional derivative for a given input can be examined
 with respect to some HLC's. For example, when a human looks at an image of an animal
@@ -227,25 +242,4 @@ we have a deeper understanding of its underlying structure. Leading to an explan
 the result.
 
 The construction of a CAV requires a method of labelling the values in your dataset with
-the corresponding concept in order to create a simple binary classifier on the data points.
-
-\subsection{Model Explainability}
-
-Model explainability within the context of neural networks isn't possible today. Model
-explainability referrs to firstly considering some input and output from a model. Then
-afterwards the model is examined to determine exactly what led to the predicted output.
-This concept is simple when we're working with Decision Trees. A decision tree is a tree
-whose nodes are representative of an input value and at every node a branch is selected
-based on the value of the input value. It is therefore easy to see how to examine the tree
-to explain the output. We just follow the branches in the tree.
-
-
-When we talk about neural networks this process is much more difficult, the underlying nodes
-are generally in the thousands, the different layers of the neural network varies in the operations
-it applies to the input value and such while travelling through the neural network the modified
-value becomes far removed from the initial input value to the eyes of the reader. That being said,
-while the possibility of completely monitoring the training process and completely monitoring the
-evaluation process is truly possible it is not feasible. And secondly the process of seeing an
-input and it's corresponding output will not be of any value if one were to consider the process
-of prediction.
-
+the corresponding concept in order to create a binary classifier on data. The binary classifier is constructed on the internal representation of the data points within the neural network. After training the neural network, and constructing the classifier, when we run a new datapoint through the neural network, and we examine the directional derivative of that datapoint. If the direction is in the direction of the binary classifier we say that the datapoint contains the concept.

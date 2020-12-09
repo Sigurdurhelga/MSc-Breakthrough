@@ -1,4 +1,6 @@
-\chapter{Methods\label{cha:methods}}
+\chapter{Methods}
+
+\label{cha:methods}
 
 In this chapter, we describe our implementation of the game Breakthrough and the methods for training a neural network to play the game. The training process uses MCTS, as described in Section \ref{sec:mcts}, to guide its training. We outline the architecture used in the neural network.
 
@@ -16,7 +18,7 @@ One of the outputs of the nerual network is the policy vector, the policy vector
 
 \section{Neural Network Architecture}
 
-The neural network architecture we opted to use was a single convolutional layer with a ReLU activation function, followed by 5 residual layers each containing two layers of convolution, batch normalization, and a ReLu activation. Lastly, a split policy/value head, where the output of the last residual layer is split into two different outputs. The policy head are two layers: first a final convolutional layer, and then a fully connected layer with a \textit{log softmax} layer. The value head consists of three layers: first a convolutional layer, then a fully connected layer, and lastly a fully connected layer with a \textit{tanh} activation function. Figure~\ref{fig:nnarch}. depicts the architecture. Using this architecture we end up with $1737986$ trainable parameters.
+The neural network architecture we opted to use was a single convolutional layer with a ReLU activation function, followed by 5 residual layers each containing two layers of convolution, batch normalization, and a ReLu activation. Lastly, a split policy/value head, where the output of the last residual layer is split into two different outputs. The policy head are two layers: first a final convolutional layer, and then a fully connected layer with a \textit{log softmax} layer. The value head consists of three layers: first a convolutional layer, then a fully connected layer, and lastly a fully connected layer with a \textit{tanh} activation function. Figure~\ref{fig:nnarch} depicts the architecture. Using this architecture we end up with $1737986$ trainable parameters.
 
 \begin{figure}[]
     \centering
