@@ -153,13 +153,13 @@
 %% NOTE: THIS IS THE DATE OF THE SUPERVISOR'S SIGNATURE!!!!!!
 %% Predefined: \MLjan, \MLfeb, \MLmar, ... \MLdec
 %\whensigned{day}{month}{year} %day is only used on some formats, but you must put something.
-\whensigned{10}{\MLdec}{2019}
+\whensigned{17}{\MLjan}{2021}
 
 %% Title first in English then Icelandic
 %% You need to put both a normal case and ALL CAPS version into the macros.
 %%
-\newML{Title}{Reykjavík University Project Report, Thesis, and Dissertation Template}{Herkænsku mat á djúptauganetum}
-\newML{TITLE}{REYKAJVÍK UNIVERSITY PROJECT REPORT, THESIS, AND DISSERTATION TEMPLATE}{Strategy evaluation of deep learning models}
+\newML{Title}{Strategic Evaluation of Deep Neural Networks in Board Games}{Herkænsku mat á djúptauganetum í leikjum}
+\newML{TITLE}{STRATEGIC EVALUATION OF DEEP NEURAL NETWORKS IN BOARD GAMES}{HERKÆNSKU MAT Á DJÚPTAUGANETUM Í LEIKJUM}
 %%
 \setTitle{\MLTitle}{\MLTITLE}
 %% ***** Special Titles ******
@@ -189,8 +189,8 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%% Bachelors Only!!! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \setID{270695--3459}%kennitala
-\setSemester{2019--1}
-\setShortSignedDate{1.1.2019}
+\setSemester{2021--1}
+\setShortSignedDate{1.1.2021}
 
 \setOrganization{}
 \setSubProgram{}
@@ -199,7 +199,7 @@
 %\setClosedDistribution{10.1.2016}%
 
 %% Put your keywords here in English, then Icelandic.  Separate them with commas.
-\newML{keywords}{Model Interpretation, Reinforcement Learning, Deep Learning}{Lykliorð1, Lykliorð2, Lykliorð3}
+\newML{keywords}{Model Interpretation, Reinforcement Learning, Deep Learning, Neural Networks, Machine Learning, Game playing, Artificial Intelligence}{Djúptauganet, Tauganet, Gervigreind, Vélrænt Gagnanám}
 \setKeywords{\MLkeywords}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Masters Only!! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -253,8 +253,9 @@
 %% Bachelors: secondary advisor (Leiðbeinandi), ONLY ONE
 %% All others: As many as you want
 \examiners{
-  \personinfo{Tough E. Questions}{\MLExaminer}{Associate Professor}{Massachusetts Institute of Technology}{USA}
+  \personinfo{Stephan Schiffel}{\MLExaminer}{\MLAssistantProfessor}{\MLReykjavikUniversity}{\MLIceland}
 
+  \personinfo{David Thue}{\MLExaminer}{\MLAssistantProfessor}{\MLReykjavikUniversity}{\MLIceland}
 }
 
 %% An abstract is required to be in both Icelandic and English for most degrees.
@@ -309,25 +310,14 @@
 %% are UTF-8 otherwise you will get weird encoding errors.
 %\part{The First Part} % Parts optional but useful in longer documents
 
-This part of the dissertation introduces the concepts and the field.
 
 %% The default division is IMRAD, you may want to divide differently
 %% See the introduction for guidance.
 
 \include{sections/introduction}%%RUM: Introduction
 \include{sections/background}%%RUM: Background
-
-%\part{The Second Part}
-
-This part of the dissertation describes the work done.
-
 \include{sections/methods}%%RUM: "Methods"
 \include{sections/results}%%RUM: "Results"
-
-%\part{The Third Part}
-
-This part of the dissertation talks about future work discussion concludes the work and
-
 \include{sections/discussion}%%RUM: "Discussion"
 
 %% ---------------------------------------------------------------

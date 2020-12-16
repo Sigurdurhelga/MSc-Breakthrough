@@ -37,7 +37,7 @@ TEMP_THRESHOLD = 10000
 TRAINING_ITERS = 10
 VERIFICATION_GAMES = 20
 CUDA = torch.cuda.is_available()
-ITERATION = 69
+ITERATION = 369
 
 
 def generate_dataset(primary_nn: BreakthroughNN, game_example : GameNode, saved_monte_tree=None, verbose=False):
@@ -98,7 +98,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
 
   initial_node = Node(state_example.initial_state(), "START")
 
-  generation =  70
+  generation =  370
 
 
   while True:
@@ -123,7 +123,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
           # """
           pi,v = neural_network_1.safe_predict(curr_node.gamestate)
           if CUDA:
-            pi = pi.detach().cpu().numpy() 
+            pi = pi.detach().cpu().numpy()
             pi = pi.reshape(-1)
           else:
             pi = pi.view(-1)
@@ -166,7 +166,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
           # """
           pi,v = neural_network_2.safe_predict(curr_node.gamestate)
           if CUDA:
-            pi = pi.detach().cpu().numpy() 
+            pi = pi.detach().cpu().numpy()
             pi = pi.reshape(-1)
           else:
             pi = pi.view(-1)
@@ -215,7 +215,7 @@ def selfplay(first_network_path, first_network_name, second_network_path, second
         neural_network_1.savemodel(first_network_path,first_network_name)
         neural_network_2.savemodel(second_network_path,second_network_name)
     if generation % 10 == 0:
-        neural_network_1.savemodel("./trained_models", f"session_res10_gen{generation}.tar")
+        neural_network_1.savemodel("./trained_models", f"session2_res5_gen{generation}.tar")
 
 
     print("[trainer.py] STARTING TRAINING")
